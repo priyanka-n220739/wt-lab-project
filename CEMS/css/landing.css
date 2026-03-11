@@ -1,0 +1,97 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, sans-serif;
+}
+
+body{
+height:100vh;
+background-image: url("https://nithyaevent.com/assets/HomePage3-C10xfvow.jpeg");
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+}
+
+/* Dark overlay */
+.overlay{
+    height:100vh;
+    background:rgba(0,0,0,0.5);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    color:white;
+}
+
+.content h2{
+    font-size:30px;
+}
+
+.content h1{
+    font-size:55px;
+    margin:15px 0;
+}
+
+.content p{
+    font-size:20px;
+    margin-bottom:30px;
+}
+ .content{
+    color:white;
+    display: inline-block;
+    animation: floatGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes floatGlow {
+     0% {
+    transform: translateY(0);
+    text-shadow: 0 0 5px lightseagreen;
+  }
+  25%{
+    transform:translate(1px);
+    text-shadow:0 0 5px deeppink;
+  }
+  50% {
+    transform: translateY(-6px);
+    text-shadow: 0 0 20px gold;
+  }
+  75%{
+    transform:translate(-2px);
+    text-shadow:0 0 15px darkmagenta;
+  }
+  100% {
+    transform: translateY(0);
+    text-shadow: 0 0 5px darksalmon;
+  }
+}
+
+/* Buttons */
+
+.buttons{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+}
+
+.btn{
+    text-decoration:none;
+    padding:15px 35px;
+    font-size:18px;
+    border-radius:8px;
+    transition:0.3s;
+}
+
+.register{
+    background:burlywood;
+    color:black;
+}
+
+.login{
+    background:olive;
+    color:black;
+}
+
+.btn:hover{
+    transform:scale(1.05);
+}
