@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About - Campus Events</title>
+
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+
+.about-section{
+padding:60px 10%;
+text-align:center;
+}
+
+.about-section h1{
+font-size:36px;
+margin-bottom:20px;
+}
+
+.about-section p{
+font-size:18px;
+line-height:1.6;
+color:black;
+max-width:900px;
+margin:auto;
+}
+
+.achievements{
+margin-top:50px;
+display:flex;
+justify-content:center;
+gap:40px;
+flex-wrap:wrap;
+}
+
+.achievement-card{
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+width:220px;
+}
+
+.achievement-card i{
+font-size:35px;
+color:#0077ff;
+margin-bottom:10px;
+}
+
+.testimonial-section{
+margin-top:60px;
+overflow:hidden;
+}
+
+.testimonial-title{
+font-size:30px;
+margin-bottom:30px;
+text-align:center;
+}
+
+.scroll-container{
+display:flex;
+gap:25px;
+animation:scroll 25s linear infinite;
+}
+
+.testimonial{
+background:white;
+padding:20px;
+border-radius:10px;
+width:250px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+text-align:center;
+}
+
+.testimonial img{
+width:70px;
+height:70px;
+border-radius:50%;
+margin-bottom:10px;
+object-fit:cover;
+}
+
+.testimonial h4{
+margin:5px 0;
+}
+
+.testimonial p{
+font-size:14px;
+color:#666;
+}
+
+@keyframes scroll{
+0%{transform:translateX(0);}
+100%{transform:translateX(-50%);}
+}
+
+.contact-section{
+margin-top:70px;
+background:black;
+padding:50px;
+text-align:center;
+}
+
+.contact-section h2{
+margin-bottom:20px;
+color:white;
+}
+
+.contact-details{
+font-size:18px;
+line-height:2;
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="hero-section">
+
+<nav class="navbar">
+<div class="logo">
+<i class="fas fa-user-graduate"></i> CAMPUS EVENTS
+</div>
+
+<ul class="nav-links">
+<li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+<li><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
+<li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+<li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+<li><a href="landing.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+</ul>
+</nav>
+
+<!-- ABOUT PLATFORM -->
+
+<section class="about-section">
+
+<h1>About Campus Events Platform</h1>
+
+<p>
+Campus Events Management System is a smart digital platform designed to
+simplify the process of discovering, managing, and participating in
+college events. Students can easily explore upcoming events, register
+online, and stay updated about departmental and university activities.
+Our platform connects students, faculty, and organizers in one place
+to build an active and engaging campus community.
+</p>
+
+<div class="achievements">
+
+<div class="achievement-card">
+<i class="fas fa-calendar-check"></i>
+<h3>500+</h3>
+<p>Events Organized</p>
+</div>
+
+<div class="achievement-card">
+<i class="fas fa-users"></i>
+<h3>10,000+</h3>
+<p>Student Participants</p>
+</div>
+
+<div class="achievement-card">
+<i class="fas fa-trophy"></i>
+<h3>120+</h3>
+<p>Awards Won</p>
+</div>
+
+<div class="achievement-card">
+<i class="fas fa-building"></i>
+<h3>25+</h3>
+<p>Departments</p>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- FACULTY FEEDBACK -->
+
+<section class="testimonial-section">
+
+<h2 class="testimonial-title">Faculty Feedback</h2>
+
+<div class="scroll-container">
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/men/11.jpg">
+<h4>Dr. Ramesh</h4>
+<p>"A great platform that helps faculty organize events efficiently."</p>
+</div>
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/women/12.jpg">
+<h4>Prof. Lakshmi</h4>
+<p>"Students can easily track and participate in academic events."</p>
+</div>
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/men/13.jpg">
+<h4>Dr. Kumar</h4>
+<p>"Event coordination has become much easier using this system."</p>
+</div>
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/women/14.jpg">
+<h4>Prof. Sita</h4>
+<p>"Excellent platform to promote campus activities."</p>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- STUDENT FEEDBACK -->
+
+<section class="testimonial-section">
+
+<h2 class="testimonial-title">Student Feedback</h2>
+
+<div class="scroll-container">
+
+
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/women/26.jpg">
+<h4>Sneha</h4>
+<p>"Great user interface and smooth experience."</p>
+</div>
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/men/27.jpg">
+<h4>Varun</h4>
+<p>"Helped me participate in many competitions."</p>
+</div>
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/women/28.jpg">
+<h4>Divya</h4>
+<p>"A very useful platform for students."</p>
+</div>
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/men/29.jpg">
+<h4>Sai</h4>
+<p>"Best way to explore campus opportunities."</p>
+</div>
+
+<div class="testimonial">
+<img src="https://randomuser.me/api/portraits/women/30.jpg">
+<h4>Meghana</h4>
+<p>"Loved the event notifications and updates."</p>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- CONTACT -->
+
+<section class="contact-section">
+
+<h2>Contact Us</h2>
+
+<div class="contact-details">
+
+<p><i class="fas fa-envelope"></i> campusevents@gmail.com</p>
+
+<p><i class="fas fa-phone"></i> +91 9876543210</p>
+
+<p><i class="fas fa-phone"></i> +91 9123456780</p>
+
+<p><i class="fas fa-map-marker-alt"></i> Campus Events Office, University Campus</p>
+
+</div>
+
+</section>
+
+</div>
+
+</body>
+</html>
