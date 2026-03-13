@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Register Event</title>
+
+<link rel="stylesheet" href="style.css">
+
+<!-- Font Awesome Icons -->
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+/* Navbar */
+
+.navbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 40px;
+background:#007BFF;
+color:white;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+}
+
+.nav-links{
+list-style:none;
+display:flex;
+gap:25px;
+}
+
+.nav-links a{
+color:white;
+text-decoration:none;
+font-size:16px;
+}
+
+.nav-links a:hover{
+text-decoration:underline;
+}
+
+/* Heading */
+
+.heading{
+text-align:center;
+margin-top:40px;
+margin-bottom:20px;
+}
+
+.heading h1{
+font-size:40px;
+font-weight:bold;
+background: linear-gradient(90deg,#007BFF,#00C6FF);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+/* Form container */
+
+.form-container{
+width:420px;
+margin:40px auto;
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 6px 15px rgba(0,0,0,0.2);
+}
+
+/* Inputs */
+
+.form-container input,
+.form-container select{
+width:100%;
+padding:10px;
+margin-top:10px;
+margin-bottom:15px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+/* Button */
+
+.btn{
+width:100%;
+background:#007BFF;
+color:white;
+border:none;
+padding:12px;
+border-radius:6px;
+cursor:pointer;
+font-size:16px;
+transition:0.3s;
+}
+
+.btn:hover{
+background:#0056b3;
+}
+
+/* Success Message */
+
+.success{
+display:none;
+text-align:center;
+background:#d4edda;
+color:#155724;
+padding:15px;
+border-radius:6px;
+margin-top:20px;
+font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav class="navbar">
+<div class="logo">
+<i class="fas fa-user-graduate"></i> register-event
+</div>
+
+<ul class="nav-links">
+<li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+<li><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
+<li><a href="#"><i class="fas fa-info-circle"></i> About Us</a></li>
+<li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+<li><a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+</ul>
+</nav>
+
+<!-- PAGE TITLE -->
+
+<div class="heading">
+<h1>Event Registration</h1>
+</div>
+
+<!-- FORM -->
+
+<div class="form-container">
+
+<form id="eventForm">
+
+<label>Name</label>
+<input type="text" id="name" placeholder="Enter your name" required>
+
+<label>Email</label>
+<input type="email" id="email" placeholder="Enter your email" required>
+
+<label>Phone</label>
+<input type="tel" id="phone" placeholder="Enter phone number" required>
+
+<label>Department</label>
+<select id="department" required>
+<option value="">Select Department</option>
+<option>CSE</option>
+<option>ECE</option>
+<option>Mechanical</option>
+<option>Civil</option>
+<option>IT</option>
+</select>
+
+<label>Event</label>
+<select id="event" required>
+<option value="">Select Event</option>
+<option>Coding Contest</option>
+<option>Hackathon</option>
+<option>AI Workshop</option>
+<option>Robotics Competition</option>
+<option>CAD Design Competition</option>
+<option>Cultural Fest</option>
+<option>Technical Quiz</option>
+</select>
+
+<button class="btn" type="submit">
+<i class="fas fa-check-circle"></i> Register Event
+</button>
+
+</form>
+
+<div class="success" id="successMsg">
+✅ Registration Successful!
+</div>
+
+</div>
+
+<script>
+
+/* Auto select event from URL */
+
+const params = new URLSearchParams(window.location.search);
+const selectedEvent = params.get("event");
+
+if(selectedEvent){
+document.getElementById("event").value = selectedEvent;
+}
+
+/* Form submission */
+
+document.getElementById("eventForm").addEventListener("submit",function(e){
+
+e.preventDefault();
+
+let name=document.getElementById("name").value;
+let email=document.getElementById("email").value;
+let phone=document.getElementById("phone").value;
+let department=document.getElementById("department").value;
+let event=document.getElementById("event").value;
+
+/* Save data */
+
+let registrations = JSON.parse(localStorage.getItem("registrations")) || [];
+
+registrations.push({
+name:name,
+email:email,
+phone:phone,
+department:department,
+event:event
+});
+
+localStorage.setItem("registrations",JSON.stringify(registrations));
+
+/* Show success message */
+
+document.getElementById("successMsg").style.display="block";
+
+/* Reset form */
+
+document.getElementById("eventForm").reset();
+
+});
+
+</script>
+
+</body>
+</html>
+
