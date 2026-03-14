@@ -11,7 +11,6 @@
 <style>
 
 /* Page title */
-
 .heading{
 text-align:center;
 margin-top:40px;
@@ -26,8 +25,6 @@ background: linear-gradient(90deg,#007BFF,#00C6FF);
 color:transparent;
 }
 
-/* Departments container */
-
 .departments{
 display:flex;
 justify-content:center;
@@ -35,8 +32,6 @@ gap:30px;
 flex-wrap:wrap;
 padding:40px;
 }
-
-/* Department card */
 
 .department-card{
 width:280px;
@@ -52,16 +47,12 @@ transition:0.3s;
 transform:scale(1.05);
 }
 
-/* Department image */
-
 .department-card img{
 width:100%;
 height:180px;
 object-fit:cover;
 border-radius:8px;
 }
-
-/* Dropdown */
 
 select{
 width:100%;
@@ -71,8 +62,6 @@ border-radius:5px;
 border:1px solid #ccc;
 }
 
-/* Button */
-
 .btn{
 background:#007BFF;
 color:white;
@@ -80,58 +69,86 @@ border:none;
 padding:10px 15px;
 border-radius:5px;
 cursor:pointer;
-margin-top:15px;
+margin-top:10px;
+width:100%;
 }
 
 .btn:hover{
 background:#0056b3;
 }
 
+.delete-btn{
+background:#dc3545;
+}
+
+.delete-btn:hover{
+background:#a71d2a;
+}
+
+.register-btn{
+background:#28a745;
+}
+
+.register-btn:hover{
+background:#1e7e34;
+}
+
 </style>
+
+<script>
+function addEvent(selectId){
+    let eventName = prompt("Enter new event name");
+    if(eventName){
+        let select = document.getElementById(selectId);
+        let option = document.createElement("option");
+        option.text = eventName;
+        select.add(option);
+        alert("Event Added");
+    }
+}
+
+function deleteEvent(selectId){
+    let select = document.getElementById(selectId);
+    if(select.selectedIndex > 0){
+        select.remove(select.selectedIndex);
+        alert("Event Deleted");
+    } else {
+        alert("Select an event to delete");
+    }
+}
+</script>
 
 </head>
 
 <body>
 
-<!-- NAVBAR -->
-
 <div class="navbar">
-
 <div class="logo">CollegeEvents</div>
 
-<div class="nav-links">
 <ul class="nav-links">
 <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
 <li><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
 <li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
 <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
- 
 </ul>
-</div>
 
 </div>
-
-<!-- PAGE TITLE -->
 
 <div class="heading">
 <h1>Department Events</h1>
 </div>
 
-<!-- DEPARTMENTS -->
-
 <div class="departments">
 
-<!-- CSE Department -->
-
+<!-- CSE -->
 <div class="department-card">
 
-<img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600" alt="CSE">
+<img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600">
 
 <h2>CSE Department</h2>
-
 <p>Select an event conducted by the CSE department.</p>
 
-<select>
+<select id="cseEvents">
 <option>Choose Event</option>
 <option>Coding Contest</option>
 <option>Hackathon</option>
@@ -139,23 +156,21 @@ background:#0056b3;
 <option>Web Development Challenge</option>
 </select>
 
-<a href="register-event.html">
-<button class="btn">Register</button>
-</a>
+<button class="btn" onclick="addEvent('cseEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('cseEvents')">Delete Event</button>
+<a href="register-event.html"><button class="btn register-btn">Register</button></a>
 
 </div>
 
-<!-- ECE Department -->
-
+<!-- ECE -->
 <div class="department-card">
 
-<img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600" alt="ECE">
+<img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600">
 
 <h2>ECE Department</h2>
-
 <p>Select an event conducted by the ECE department.</p>
 
-<select>
+<select id="eceEvents">
 <option>Choose Event</option>
 <option>Robotics Competition</option>
 <option>Circuit Debugging</option>
@@ -163,23 +178,21 @@ background:#0056b3;
 <option>Embedded Systems Challenge</option>
 </select>
 
-<a href="register-event.html">
-<button class="btn">Register</button>
-</a>
+<button class="btn" onclick="addEvent('eceEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('eceEvents')">Delete Event</button>
+<a href="register-event.html"><button class="btn register-btn">Register</button></a>
 
 </div>
 
-<!-- Mechanical Department -->
-
+<!-- Mechanical -->
 <div class="department-card">
 
-<img src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=600&q=80" alt="Mechanical">
+<img src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=600&q=80">
 
 <h2>Mechanical Department</h2>
-
 <p>Select an event conducted by the Mechanical department.</p>
 
-<select>
+<select id="mechEvents">
 <option>Choose Event</option>
 <option>CAD Design Competition</option>
 <option>Robo Race</option>
@@ -187,9 +200,9 @@ background:#0056b3;
 <option>Automobile Workshop</option>
 </select>
 
-<a href="register-event.html">
-<button class="btn">Register</button>
-</a>
+<button class="btn" onclick="addEvent('mechEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('mechEvents')">Delete Event</button>
+<a href="register-event.html"><button class="btn register-btn">Register</button></a>
 
 </div>
 
