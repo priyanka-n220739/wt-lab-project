@@ -1,0 +1,265 @@
+ <!DOCTYPE html>
+<html>
+
+<head>
+
+<title>College Events</title>
+
+<link rel="stylesheet" href="css/home.css">
+
+<style>
+
+.heading{
+text-align:center;
+margin-top:40px;
+margin-bottom:20px;
+}
+
+.heading h1{
+font-size:40px;
+font-weight:bold;
+background: linear-gradient(90deg,#ff7e5f,#feb47b);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+.departments{
+display:flex;
+justify-content:center;
+gap:30px;
+flex-wrap:wrap;
+padding:40px;
+}
+
+.department-card{
+width:280px;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+text-align:center;
+transition:0.3s;
+}
+
+.department-card:hover{
+transform:scale(1.05);
+}
+
+.department-card img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:8px;
+}
+
+select{
+width:100%;
+padding:8px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+.btn{
+background:#ff7e5f;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:5px;
+cursor:pointer;
+margin-top:10px;
+}
+
+.btn:hover{
+background:#e55d3f;
+}
+
+.delete-btn{
+background:#dc3545;
+}
+
+.delete-btn:hover{
+background:#a71d2a;
+}
+
+</style>
+
+<script>
+
+function addEvent(selectId){
+
+let eventName = prompt("Enter new event name");
+
+if(eventName){
+
+let select = document.getElementById(selectId);
+let option = document.createElement("option");
+
+option.text = eventName;
+select.add(option);
+
+alert("Event Added");
+
+}
+
+}
+
+function deleteEvent(selectId){
+
+let select = document.getElementById(selectId);
+
+if(select.selectedIndex > 0){
+
+select.remove(select.selectedIndex);
+alert("Event Deleted");
+
+}
+else{
+
+alert("Select an event to delete");
+
+}
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+<div class="logo">CollegeEvents</div>
+
+<ul class="nav-links">
+<li><a href="home.html">Home</a></li>
+<li><a href="dash_board.html">Dashboard</a></li>
+<li><a href="about.html">About Us</a></li>
+<li><a href="settings.html">Settings</a></li>
+</ul>
+
+</div>
+
+<div class="heading">
+<h1>College Events</h1>
+</div>
+
+<div class="departments">
+
+<!-- Cultural Events -->
+
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600">
+
+<h2>Cultural Events</h2>
+
+<p>Select a cultural event conducted by the college.</p>
+
+<select id="culturalEvents">
+<option>Choose Event</option>
+<option>Dance Competition</option>
+<option>Music Fest</option>
+<option>Drama Performance</option>
+<option>Fashion Show</option>
+</select>
+
+<button class="btn" onclick="addEvent('culturalEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('culturalEvents')">Delete Event</button>
+
+<a href="register-event.html">
+<button class="btn">Register</button>
+</a>
+
+</div>
+
+
+<!-- Technical Events -->
+
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600">
+
+<h2>Technical Events</h2>
+
+<p>Select a technical event conducted by the college.</p>
+
+<select id="technicalEvents">
+<option>Choose Event</option>
+<option>Project Expo</option>
+<option>Tech Quiz</option>
+<option>Innovation Challenge</option>
+<option>Startup Pitch</option>
+</select>
+
+<button class="btn" onclick="addEvent('technicalEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('technicalEvents')">Delete Event</button>
+
+<a href="register-event.html">
+<button class="btn">Register</button>
+</a>
+
+</div>
+
+
+<!-- Sports Events -->
+
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600">
+
+<h2>Sports Events</h2>
+
+<p>Select a sports event conducted by the college.</p>
+
+<select id="sportsEvents">
+<option>Choose Event</option>
+<option>Cricket Tournament</option>
+<option>Football Match</option>
+<option>Basketball League</option>
+<option>Badminton Championship</option>
+</select>
+
+<button class="btn" onclick="addEvent('sportsEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('sportsEvents')">Delete Event</button>
+
+<a href="register-event.html">
+<button class="btn">Register</button>
+</a>
+
+</div>
+
+
+<!-- Literary Events -->
+
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600">
+
+<h2>Literary Events</h2>
+
+<p>Select a literary event conducted by the college.</p>
+
+<select id="literaryEvents">
+<option>Choose Event</option>
+<option>Debate Competition</option>
+<option>Essay Writing</option>
+<option>Poetry Recital</option>
+<option>Story Writing Contest</option>
+</select>
+
+<button class="btn" onclick="addEvent('literaryEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('literaryEvents')">Delete Event</button>
+
+<a href="register-event.html">
+<button class="btn">Register</button>
+</a>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

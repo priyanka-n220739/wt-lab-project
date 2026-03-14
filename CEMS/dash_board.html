@@ -323,7 +323,7 @@
     <a href="#" class="nav-link"><span class="icon">📊</span> Reports</a>
     <div class="nav-section">Account</div>
     <a href="#" class="nav-link"><span class="icon">⚙️</span> Settings</a>
-    <a href="#" class="nav-link"><span class="icon">🚪</span> Logout</a>
+    <!--<a href="#" class="nav-link"><span class="icon">🚪</span> Logout</a>-->
   </nav>
   <div class="sidebar-footer">
     <div class="user-avatar">AD</div>
@@ -442,9 +442,9 @@
             <th>Roll No.</th>
             <th>Department</th>
             <th>Events Attended</th>
-            <th>Score</th>
+           <!-- <th>score</th>
             <th>Performance</th>
-            <th>Grade</th>
+            <th>Grade</th>-->
           </tr>
         </thead>
         <tbody id="perfTbody"></tbody>
@@ -543,8 +543,7 @@
       <div class="rt">${r.time}</div>
     </div>`;
   });
-
-  // ── RENDER PERFORMANCE ──
+  // render performance
   const pt = document.getElementById('perfTbody');
   students.forEach(s => {
     const cls  = s.score >= 85 ? 'sf-green' : s.score >= 70 ? 'sf-yellow' : 'sf-red';
@@ -564,7 +563,6 @@
       <td><span class="badge ${gc[0]}">${gc[1]}</span></td>
     </tr>`;
   });
-
   // ── CHARTS ──
   new Chart(document.getElementById('lineChart'), {
     type: 'line',
