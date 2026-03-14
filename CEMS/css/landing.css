@@ -4,55 +4,10 @@
     box-sizing:border-box;
     font-family: Arial, sans-serif;
 }
-/*.stars{
-    position: fixed;
-    inset: 0;
-    z-index: -3;
-    pointer-events: none;
-
-    background-image:
-      radial-gradient(4px 4px at 10% 20%, olive, transparent),
-      radial-gradient(5px 5px at 40% 70%, gold, transparent),
-      radial-gradient(3px 3px at 80% 30%, white, transparent),
-      radial-gradient(6px 6px at 60% 10%, pink, transparent),
-      radial-gradient(4px 4px at 20% 90%, wheat, transparent),
-      radial-gradient(5px 5px at 90% 60%, chocolate, transparent);
-
-    background-size:
-      120px 120px,
-      180px 180px,
-      90px 90px,
-      200px 200px,
-      140px 140px,
-      160px 160px;
-
-    animation:
-      drift1 6s linear infinite,
-      drift2 3s linear infinite,
-      drift3 2s linear infinite;
-    
-    filter: drop-shadow(0 0 10px wheat);
-}  */
-
-/*  DIFFERENT RANDOM MOTIONS */
-/* @keyframes drift1{
-    from{ background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
-    to  { background-position: 120px 260px, -200px 140px, 80px -160px, -150px 300px, 60px -240px, -90px 180px; }
-}
-
-@keyframes drift2{
-    from{ background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
-    to  { background-position: -160px 120px, 220px -180px, -90px 200px, 300px -140px, -200px 90px, 140px -260px; }
-}
-
-@keyframes drift3{
-    from{ background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
-    to  { background-position: 200px -200px, -120px 260px, 260px 120px, -240px -180px, 180px 200px, -300px 140px; }
-}  */
 
 body{
 height:100vh;
-background-image: url("https://www.shutterstock.com/image-photo/blurred-background-vibrant-scene-showcasing-600nw-2577243207.jpg");
+background-image: url("https://nithyaevent.com/assets/HomePage3-C10xfvow.jpeg");
 background-size:cover;
 background-position:center;
 background-repeat:no-repeat;
