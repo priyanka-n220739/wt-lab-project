@@ -1,62 +1,632 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Campus Events</title>
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Management Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f8fc;
+      color: #2d3a4a;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 230px;
+      background: #fff;
+      border-right: 1px solid #e8ecf4;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+    }
+    .sidebar-logo {
+      padding: 22px 20px;
+      border-bottom: 1px solid #e8ecf4;
+    }
+    .sidebar-logo h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1a56db;
+    }
+    .sidebar-logo p {
+      font-size: 0.7rem;
+      color: #9aa3b2;
+      margin-top: 2px;
+    }
+    .sidebar nav {
+      padding: 14px 12px;
+      flex: 1;
+    }
+    .nav-section {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #b0b9c8;
+      padding: 10px 10px 4px;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      color: #6b7a90;
+      text-decoration: none;
+      margin-bottom: 2px;
+      transition: all 0.15s;
+      font-weight: 500;
+    }
+    .nav-link:hover { background: #f0f4ff; color: #1a56db; }
+    .nav-link.active { background: #eef2ff; color: #1a56db; font-weight: 600; }
+    .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid #e8ecf4;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #1a56db;
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .user-name { font-size: 0.82rem; font-weight: 600; }
+    .user-role { font-size: 0.7rem; color: #9aa3b2; }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: 230px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e8ecf4;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .topbar-left h1 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-left p  { font-size: 0.75rem; color: #9aa3b2; margin-top: 1px; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .search {
+      display: flex; align-items: center; gap: 7px;
+      border: 1px solid #e8ecf4;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.82rem;
+      color: #9aa3b2;
+      background: #f7f8fc;
+    }
+    .btn-primary {
+      background: #1a56db;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #1447c0; }
+
+    /* ── CONTENT ── */
+    .content { padding: 24px 28px; }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e8ecf4;
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .stat-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .stat-icon.blue   { background: #eef2ff; }
+    .stat-icon.yellow { background: #fffbeb; }
+    .stat-icon.green  { background: #ecfdf5; }
+    .stat-icon.red    { background: #fff1f2; }
+    .stat-label { font-size: 0.72rem; color: #9aa3b2; font-weight: 500; }
+    .stat-value { font-size: 1.7rem; font-weight: 700; margin: 3px 0 2px; line-height: 1; }
+    .stat-note  { font-size: 0.72rem; }
+    .stat-note.up   { color: #16a34a; }
+    .stat-note.down { color: #dc2626; }
+    .stat-note.neutral { color: #9aa3b2; }
+
+    /* ── TWO COLUMN ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .grid-32 { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 18px; }
+
+    /* ── CARD ── */
+    .card {
+      background: #fff;
+      border: 1px solid #e8ecf4;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .card-head h3 { font-size: 0.92rem; font-weight: 700; }
+    .link-sm { font-size: 0.75rem; color: #1a56db; text-decoration: none; font-weight: 500; }
+    .link-sm:hover { text-decoration: underline; }
+
+    /* ── TABLE ── */
+    .tbl { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    .tbl th {
+      text-align: left;
+      padding: 7px 10px;
+      font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: #9aa3b2;
+      border-bottom: 1px solid #e8ecf4;
+    }
+    .tbl td {
+      padding: 11px 10px;
+      border-bottom: 1px solid #f3f4f8;
+      vertical-align: middle;
+    }
+    .tbl tr:last-child td { border-bottom: none; }
+    .tbl tbody tr:hover td { background: #fafbff; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 0.7rem; font-weight: 600;
+    }
+    .b-blue   { background: #eef2ff; color: #1a56db; }
+    .b-green  { background: #ecfdf5; color: #15803d; }
+    .b-yellow { background: #fffbeb; color: #b45309; }
+    .b-red    { background: #fff1f2; color: #b91c1c; }
+
+    /* ── ACTION BTNS ── */
+    .act { background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.76rem; padding: 3px 7px; border-radius: 5px; font-weight: 500; }
+    .act.edit { color: #1a56db; } .act.edit:hover { background: #eef2ff; }
+    .act.del  { color: #dc2626; } .act.del:hover  { background: #fff1f2; }
+
+    /* ── REGISTRATIONS ── */
+    .reg-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f8;
+    }
+    .reg-row:last-child { border-bottom: none; }
+    .ava {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #1a56db; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+    }
+    .ava.g2 { background: #0891b2; }
+    .ava.g3 { background: #7c3aed; }
+    .ava.g4 { background: #059669; }
+    .ava.g5 { background: #d97706; }
+    .rn { font-size: 0.84rem; font-weight: 600; }
+    .re { font-size: 0.73rem; color: #9aa3b2; }
+    .rt { font-size: 0.7rem; color: #b0b9c8; margin-left: auto; white-space: nowrap; }
+
+    /* ── PERFORMANCE ── */
+    .score-wrap { display: flex; align-items: center; gap: 8px; }
+    .score-bar  { flex: 1; height: 6px; border-radius: 99px; background: #f0f1f5; overflow: hidden; max-width: 100px; }
+    .score-fill { height: 100%; border-radius: 99px; }
+    .sf-green  { background: #22c55e; }
+    .sf-yellow { background: #f59e0b; }
+    .sf-red    { background: #ef4444; }
+
+    /* ── CHART ── */
+    .chart-box { position: relative; height: 200px; }
+
+    /* ── MODAL ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(45,58,74,0.25);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px;
+      width: 440px; max-width: 95vw;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    }
+    .modal h2 { font-size: 1rem; font-weight: 700; margin-bottom: 18px; }
+    .fg { margin-bottom: 14px; }
+    .fg label {
+      display: block; font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: #6b7a90; margin-bottom: 5px;
+    }
+    .fg input, .fg select {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid #e8ecf4; border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 0.84rem; color: #2d3a4a;
+      outline: none; background: #fafbff;
+      transition: border-color 0.15s;
+    }
+    .fg input:focus, .fg select:focus { border-color: #1a56db; background: #fff; }
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .btn-ghost {
+      background: none; border: 1px solid #e8ecf4; color: #6b7a90;
+      padding: 8px 16px; border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 0.82rem; cursor: pointer;
+    }
+    .btn-ghost:hover { border-color: #b0b9c8; color: #2d3a4a; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .grid-32 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <i class="fas fa-user-graduate"></i> CAMPUS EVENTS
-            </div>
-            <ul class="sidebar-links">
-                <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
-                <li class="active"><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
-                <li><a href="#"><i class="fas fa-info-circle"></i> About Us</a></li>
-                <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
-                <li><a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </aside>
 
-        <!-- Main content -->
-        <main class="main-content">
-            <h1>Admin Dashboard</h1>
-            <div class="dashboard-cards">
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-calendar-alt"></i></div>
-                    <div class="card-info">
-                        <h2>12</h2>
-                        <p>Upcoming Events</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-users"></i></div>
-                    <div class="card-info">
-                        <h2>250</h2>
-                        <p>Participants</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-file-signature"></i></div>
-                    <div class="card-info">
-                        <h2>30</h2>
-                        <p>Registrations Today</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-envelope"></i></div>
-                    <div class="card-info">
-                        <h2>15</h2>
-                        <p>Messages</p>
-                    </div>
-                </div>
-            </div>
-        </main>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2>🎓 EduEvents</h2>
+    <p>College Event Management</p>
+  </div>
+  <nav>
+    <div class="nav-section">Main Menu</div>
+    <a href="#" class="nav-link active"><span class="icon">🏠</span> Dashboard</a>
+    <a href="events.html" class="nav-link"><span class="icon">📅</span> Events</a>
+    <a href="register.html" class="nav-link"><span class="icon">📋</span> Registrations</a>
+    <a href="#" class="nav-link"><span class="icon">👥</span> Students</a>
+    <div class="nav-section">Manage</div>
+    <a href="#" class="nav-link" onclick="openModal(); return false;"><span class="icon">➕</span> Add Event</a>
+    <a href="#" class="nav-link"><span class="icon">🏛️</span> Departments</a>
+    <a href="#" class="nav-link"><span class="icon">📊</span> Reports</a>
+    <div class="nav-section">Account</div>
+    <a href="#" class="nav-link"><span class="icon">⚙️</span> Settings</a>
+    <a href="#" class="nav-link"><span class="icon">🚪</span> Logout</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-avatar">AD</div>
+    <div>
+      <div class="user-name">Admin</div>
+      <div class="user-role">Event Coordinator</div>
     </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Dashboard</h1>
+      <p>Academic Year 2025 – 2026</p>
+    </div>
+    <div class="topbar-right">
+      <div class="search">🔍 Search...</div>
+      <button class="btn-primary" onclick="openModal()">+ Add Event</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">📅</div>
+        <div>
+          <div class="stat-label">Total Events</div>
+          <div class="stat-value">42</div>
+          <div class="stat-note neutral">8 added this month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">🎓</div>
+        <div>
+          <div class="stat-label">Registrations</div>
+          <div class="stat-value">1,284</div>
+          <div class="stat-note up">↑ 12% vs last month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div>
+          <div class="stat-label">Completed</div>
+          <div class="stat-value">29</div>
+          <div class="stat-note up">69% completion rate</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">⏳</div>
+        <div>
+          <div class="stat-label">Upcoming</div>
+          <div class="stat-value">13</div>
+          <div class="stat-note down">3 events this week</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h3>📈 Registrations per Month</h3></div>
+        <div class="chart-box"><canvas id="lineChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>🏛️ Events by Department</h3></div>
+        <div class="chart-box"><canvas id="doughnutChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- EVENTS TABLE + RECENT REGISTRATIONS -->
+    <div class="grid-32">
+      <div class="card">
+        <div class="card-head">
+          <h3>📅 Upcoming Events</h3>
+          <a href="events.html" class="link-sm">View all →</a>
+        </div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Event Name</th>
+              <th>Date</th>
+              <th>Dept</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>🔔 Recent Registrations</h3>
+          <a href="register.html" class="link-sm">View all →</a>
+        </div>
+        <div id="regList"></div>
+      </div>
+    </div>
+
+    <!-- STUDENT PERFORMANCE -->
+    <div class="card">
+      <div class="card-head">
+        <h3>📊 Student Performance</h3>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Roll No.</th>
+            <th>Department</th>
+            <th>Events Attended</th>
+            <th>Score</th>
+            <th>Performance</th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody id="perfTbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD EVENT MODAL -->
+<div class="overlay" id="overlay" onclick="outsideClose(event)">
+  <div class="modal">
+    <h2>➕ Add New Event</h2>
+    <div class="fg">
+      <label>Event Name</label>
+      <input id="eName" type="text" placeholder="e.g. Tech Symposium 2026"/>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input id="eDate" type="date"/></div>
+      <div class="fg">
+        <label>Department</label>
+        <select id="eDept">
+          <option>CSE</option><option>ECE</option><option>MBA</option>
+          <option>Civil</option><option>Mechanical</option><option>All</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Venue</label><input id="eVenue" type="text" placeholder="e.g. Auditorium A"/></div>
+      <div class="fg"><label>Max Seats</label><input id="eSeats" type="number" placeholder="100"/></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="addEvent()">Create Event</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── DATA ──
+  const events = [
+    { name:"Tech Symposium",  date:"Mar 18", dept:"CSE",     status:"upcoming" },
+    { name:"Cultural Fest",   date:"Mar 22", dept:"All",     status:"upcoming" },
+    { name:"Hackathon 2026",  date:"Mar 25", dept:"CSE/ECE", status:"open"     },
+    { name:"Business Summit", date:"Apr 2",  dept:"MBA",     status:"upcoming" },
+    { name:"Civil Expo",      date:"Apr 8",  dept:"Civil",   status:"open"     },
+  ];
+
+  const regs = [
+    { name:"Priya S.",  event:"Tech Symposium",  time:"2h ago",    init:"PS", cl:"" },
+    { name:"Arjun K.",  event:"Hackathon 2026",  time:"4h ago",    init:"AK", cl:"g2" },
+    { name:"Meera R.",  event:"Cultural Fest",   time:"5h ago",    init:"MR", cl:"g3" },
+    { name:"Karan M.",  event:"Business Summit", time:"Yesterday", init:"KM", cl:"g4" },
+    { name:"Sneha P.",  event:"Civil Expo",      time:"Yesterday", init:"SP", cl:"g5" },
+  ];
+
+  const students = [
+    { name:"Ramya A.",    roll:"220474", dept:"CSE",   events:8, score:92 },
+    { name:"Priyanka N.", roll:"220739", dept:"CSE",   events:7, score:88 },
+    { name:"Arjun K.",    roll:"220112", dept:"ECE",   events:6, score:75 },
+    { name:"Meera R.",    roll:"220345", dept:"MBA",   events:5, score:82 },
+    { name:"Karan M.",    roll:"220561", dept:"Civil", events:4, score:65 },
+    { name:"Sneha P.",    roll:"220892", dept:"CSE",   events:9, score:95 },
+    { name:"Vikram T.",   roll:"220234", dept:"Mech",  events:3, score:55 },
+  ];
+
+  // ── RENDER EVENTS ──
+  function renderEvents() {
+    const tb = document.getElementById('eventsTbody');
+    tb.innerHTML = '';
+    events.forEach((e, i) => {
+      const bc = e.status === 'open' ? 'b-green' : 'b-blue';
+      tb.innerHTML += `<tr>
+        <td><strong>${e.name}</strong></td>
+        <td>${e.date}</td>
+        <td>${e.dept}</td>
+        <td><span class="badge ${bc}">${e.status}</span></td>
+        <td>
+          <button class="act edit" onclick="alert('Edit: ${e.name}')">Edit</button>
+          <button class="act del"  onclick="delEvent(${i})">Delete</button>
+        </td>
+      </tr>`;
+    });
+  }
+
+  function delEvent(i) {
+    if (confirm('Delete "' + events[i].name + '"?')) { events.splice(i, 1); renderEvents(); }
+  }
+
+  // ── RENDER REGISTRATIONS ──
+  const rl = document.getElementById('regList');
+  regs.forEach(r => {
+    rl.innerHTML += `<div class="reg-row">
+      <div class="ava ${r.cl}">${r.init}</div>
+      <div><div class="rn">${r.name}</div><div class="re">${r.event}</div></div>
+      <div class="rt">${r.time}</div>
+    </div>`;
+  });
+
+  // ── RENDER PERFORMANCE ──
+  const pt = document.getElementById('perfTbody');
+  students.forEach(s => {
+    const cls  = s.score >= 85 ? 'sf-green' : s.score >= 70 ? 'sf-yellow' : 'sf-red';
+    const gc   = s.score >= 85 ? ['b-green','A'] : s.score >= 70 ? ['b-yellow','B'] : ['b-red','C'];
+    pt.innerHTML += `<tr>
+      <td><strong>${s.name}</strong></td>
+      <td style="color:#9aa3b2">${s.roll}</td>
+      <td>${s.dept}</td>
+      <td style="text-align:center;font-weight:600">${s.events}</td>
+      <td><strong>${s.score}%</strong></td>
+      <td>
+        <div class="score-wrap">
+          <div class="score-bar"><div class="score-fill ${cls}" style="width:${s.score}%"></div></div>
+          <span style="font-size:0.72rem;color:#9aa3b2">${s.score}</span>
+        </div>
+      </td>
+      <td><span class="badge ${gc[0]}">${gc[1]}</span></td>
+    </tr>`;
+  });
+
+  // ── CHARTS ──
+  new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+      labels: ['Oct','Nov','Dec','Jan','Feb','Mar'],
+      datasets: [{
+        label: 'Registrations',
+        data: [120, 190, 150, 280, 320, 410],
+        borderColor: '#1a56db',
+        backgroundColor: 'rgba(26,86,219,0.07)',
+        borderWidth: 2.5, fill: true, tension: 0.4,
+        pointBackgroundColor: '#1a56db', pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#f0f1f7' }, ticks: { color: '#9aa3b2', font: { size: 11 } } },
+        y: { grid: { color: '#f0f1f7' }, ticks: { color: '#9aa3b2', font: { size: 11 } } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('doughnutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['CSE','ECE','MBA','Civil','Mech'],
+      datasets: [{
+        data: [14, 10, 8, 6, 4],
+        backgroundColor: ['#1a56db','#f59e0b','#10b981','#ef4444','#8b5cf6'],
+        borderWidth: 2, borderColor: '#fff', hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 11 }, color: '#2d3a4a', padding: 12, usePointStyle: true } }
+      },
+      cutout: '65%'
+    }
+  });
+
+  // ── MODAL ──
+  function openModal()    { document.getElementById('overlay').classList.add('open'); }
+  function closeModal()   { document.getElementById('overlay').classList.remove('open'); }
+  function outsideClose(e){ if (e.target.id === 'overlay') closeModal(); }
+
+  function addEvent() {
+    const name = document.getElementById('eName').value.trim();
+    const date = document.getElementById('eDate').value;
+    const dept = document.getElementById('eDept').value;
+    if (!name || !date) { alert('Please enter event name and date.'); return; }
+    const d = new Date(date);
+    const label = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+    events.unshift({ name, date: label, dept, status: 'upcoming' });
+    renderEvents();
+    closeModal();
+    ['eName','eDate','eVenue','eSeats'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  renderEvents();
+</script>
 </body>
 </html>
