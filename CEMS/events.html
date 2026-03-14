@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Department Events</title>
+
+<link rel="stylesheet" href="css/home.css">
+
+<style>
+
+/* Page title */
+
+.heading{
+text-align:center;
+margin-top:40px;
+margin-bottom:20px;
+}
+
+.heading h1{
+font-size:40px;
+font-weight:bold;
+background: linear-gradient(90deg,#007BFF,#00C6FF);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+/* Departments container */
+
+.departments{
+display:flex;
+justify-content:center;
+gap:30px;
+flex-wrap:wrap;
+padding:40px;
+}
+
+/* Department card */
+
+.department-card{
+width:280px;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+text-align:center;
+transition:0.3s;
+}
+
+.department-card:hover{
+transform:scale(1.05);
+}
+
+/* Department image */
+
+.department-card img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:8px;
+}
+
+/* Dropdown */
+
+select{
+width:100%;
+padding:8px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+/* Button */
+
+.btn{
+background:#007BFF;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:5px;
+cursor:pointer;
+margin-top:15px;
+}
+
+.btn:hover{
+background:#0056b3;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+
+<div class="logo">CollegeEvents</div>
+
+<div class="nav-links">
+<ul class="nav-links">
+                <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                <li><a href="#"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+</div>
+
+</div>
+
+<!-- PAGE TITLE -->
+
+<div class="heading">
+<h1>Department Events</h1>
+</div>
+
+<!-- DEPARTMENTS -->
+
+<div class="departments">
+
+<!-- CSE Department -->
+
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600" alt="CSE">
+
+<h2>CSE Department</h2>
+
+<p>Select an event conducted by the CSE department.</p>
+
+<select>
+<option>Choose Event</option>
+<option>Coding Contest</option>
+<option>Hackathon</option>
+<option>AI Workshop</option>
+<option>Web Development Challenge</option>
+</select>
+
+<a href="register-event.html">
+<button class="btn">Register</button>
+</a>
+
+</div>
+
+
+<!-- ECE Department -->
+
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600" alt="ECE">
+
+<h2>ECE Department</h2>
+
+<p>Select an event conducted by the ECE department.</p>
+
+<select>
+<option>Choose Event</option>
+<option>Robotics Competition</option>
+<option>Circuit Debugging</option>
+<option>IoT Workshop</option>
+<option>Embedded Systems Challenge</option>
+</select>
+
+<a href="register-event.html">
+<button class="btn">Register</button>
+</a>
+
+</div>
+
+
+<!-- Mechanical Department -->
+
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=600&q=80" alt="Mechanical">
+
+<h2>Mechanical Department</h2>
+
+<p>Select an event conducted by the Mechanical department.</p>
+
+<select>
+<option>Choose Event</option>
+<option>CAD Design Competition</option>
+<option>Robo Race</option>
+<option>Machine Design</option>
+<option>Automobile Workshop</option>
+</select>
+
+<a href="register-event.html">
+<button class="btn">Register</button>
+</a>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
