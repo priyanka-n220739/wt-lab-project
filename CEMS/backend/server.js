@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,12 +11,11 @@ const User = require('./models/User');
 const EventRegistration = require('./models/EventRegistration');
 const Event = require('./models/Event');
 
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cems';
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey_cems';
+const MONGO_URI = process.env.MONGO_URI ;
+const JWT_SECRET = process.env.JWT_SECRET ;
 
 // Middleware
 app.use(cors());
@@ -24,9 +24,12 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // Connect to MongoDB
 mongoose.connect(MONGO_URI, { family: 4 })
-  .then(() => console.log('✅ Connected to MongoDB Atlas'))
+  .then(() => {
+    console.log('Connected to MongoDB Atlas');
+    console.log('Database name:', mongoose.connection.db.databaseName);
+  })
   .catch(err => {
-    console.error('❌ Database Connection Error!');
+    console.error('Database Connection Error!');
     console.error('Reason:', err.message);
     console.log('--- ACTION REQUIRED ---');
     console.log('1. If on college Wi-Fi, try Mobile Hotspot (Data only).');
@@ -62,45 +65,95 @@ const adminMiddleware = (req, res, next) => {
 // =======================
 
 // Demo Mode Toggle (Set to true to skip DB check)
-const DEMO_MODE = true;
+const DEMO_MODE = false;
 
 // Register User
 app.post('/api/auth/register', async (req, res) => {
-  if (DEMO_MODE) return res.status(201).json({ message: 'DEMO MODE: User registered successfully' });
   try {
-    const { collegeId, email, password, role } = req.body;
+    const { role, collegeId, email, password } = req.body;
+
+    // ✅ basic validation
+    if (!email || !password || !role) {
+      return res.status(400).json({ message: 'Email, password, and role are required' });
+    }
+
+    // ✅ only student needs collegeId
+    if (role === 'student' && !collegeId) {
+      return res.status(400).json({ message: 'College ID is required for students' });
+    }
+
+    // 🔍 check existing
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'User already exists with this email' });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // 🔐 hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const assignedRole = role === 'admin' ? 'admin' : 'student';
-    const newUser = new User({ collegeId, email, password: hashedPassword, role: assignedRole });
+
+    // ✅ create user
+    const newUser = new User({
+      role,
+      email,
+      password: hashedPassword,
+      collegeId: role === 'admin' ? null : collegeId
+    });
+
     await newUser.save();
+
     res.status(201).json({ message: 'User registered successfully' });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error during registration' });
+    console.error('Registration Error:', error);
+    res.status(500).json({ message: 'Server error: ' + (error.message || 'unknown') });
   }
 });
 
 // Login User
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password, loginType } = req.body;
-  
-  if (DEMO_MODE) {
-    const role = loginType || (email.toLowerCase().includes('admin') ? 'admin' : 'student');
-    const token = jwt.sign({ id: 'dummy_id', email, role }, JWT_SECRET, { expiresIn: '3h' });
-    return res.status(200).json({ message: 'DEMO MODE: Login successful', token, role });
-  }
-
   try {
+    const { email, password, loginType } = req.body;
+
+    // 🔴 Validation
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    // 🔍 Find user
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Invalid email or password' });
-    if (loginType && user.role !== loginType) return res.status(403).json({ message: `Access denied: You are not an ${loginType}` });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // 🔐 Check role (optional but safe)
+    if (loginType && user.role !== loginType) {
+      return res.status(403).json({ message: `Access denied: You are not an ${loginType}` });
+    }
+
+    // 🔐 Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
-    const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '3h' });
-    res.status(200).json({ message: 'Login successful', token, role: user.role });
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // 🔐 Generate JWT
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '3h' }
+    );
+
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+      role: user.role
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error during login' });
@@ -113,6 +166,9 @@ app.post('/api/auth/login', async (req, res) => {
 
 // ADMIN: Create Event
 app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
+  if (DEMO_MODE) {
+    return res.status(201).json({ message: 'DEMO MODE: Event created successfully', ...req.body });
+  }
   try {
     const newEvent = new Event({
       ...req.body,
@@ -127,6 +183,12 @@ app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
 
 // ADMIN: Get all Events (shows everything)
 app.get('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
+  if (DEMO_MODE) {
+    return res.json([
+      { _id: '1', name: 'Hackathon 2026', date: new Date(), department: 'CSE', status: 'open', isVisibleToStudents: true },
+      { _id: '2', name: 'Cultural Fest', date: new Date(), department: 'Cultural', status: 'upcoming', isVisibleToStudents: true }
+    ]);
+  }
   try {
     const events = await Event.find().sort({ date: 1 });
     res.json(events);
@@ -148,6 +210,9 @@ app.put('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) => 
 
 // ADMIN: Delete Event
 app.delete('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) => {
+    if (DEMO_MODE) {
+      return res.json({ message: 'DEMO MODE: Event deleted successfully' });
+    }
     try {
       const deletedEvent = await Event.findByIdAndDelete(req.params.id);
       if (!deletedEvent) return res.status(404).json({ message: 'Event not found' });
@@ -159,6 +224,13 @@ app.delete('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) 
 
 // STUDENT & ANY AUTHENTICATED USER: Get visibly available events
 app.get('/api/events/available', authMiddleware, async (req, res) => {
+    if (DEMO_MODE) {
+      return res.json([
+        { _id: '1', name: 'Hackathon 2026', date: new Date(), department: 'CSE', status: 'open', isVisibleToStudents: true },
+        { _id: '2', name: 'Cultural Fest', date: new Date(), department: 'Cultural', status: 'upcoming', isVisibleToStudents: true },
+        { _id: '3', name: 'Mega Dance 2026', date: new Date(), department: 'Cultural', status: 'open', isVisibleToStudents: true }
+      ]);
+    }
     try {
       const events = await Event.find({ isVisibleToStudents: true, status: { $in: ['open', 'upcoming'] } }).sort({ date: 1 });
       res.json(events);
@@ -217,6 +289,16 @@ app.get('/api/user/registrations', authMiddleware, async (req, res) => {
       console.error(error);
       res.status(500).json({ message: 'Server error fetching user registrations' });
     }
+});
+
+// DEBUG: Get all users (remove in production)
+app.get('/api/debug/users', async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users' });
+  }
 });
 
 app.use((req, res) => {
