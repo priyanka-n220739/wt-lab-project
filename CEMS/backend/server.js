@@ -166,13 +166,42 @@ app.post('/api/auth/login', async (req, res) => {
 
 // ADMIN: Create Event
 app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
-  if (DEMO_MODE) {
-    return res.status(201).json({ message: 'DEMO MODE: Event created successfully', ...req.body });
-  }
   try {
+    const { name, date, department, startTime, endTime, place, maxSeats, image, status } = req.body;
+    
+    if (!name || !date || !startTime || !endTime || !place) {
+      return res.status(400).json({ message: 'Meeting required event details (name, date, time, place) are mandatory.' });
+    }
+
+    const eventDate = new Date(date);
+    const startOfDay = new Date(eventDate);
+    startOfDay.setUTCHours(0,0,0,0);
+    const endOfDay = new Date(eventDate);
+    endOfDay.setUTCHours(23,59,59,999);
+
+    const escapedPlace = place.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Find all events for same place and date
+    const existingAtPlace = await Event.find({
+      date: { $gte: startOfDay, $lte: endOfDay },
+      place: { $regex: new RegExp(`^${escapedPlace}$`, "i") }
+    });
+
+    for (const conf of existingAtPlace) {
+        // Safe defaults for legacy data missing times
+        const cStart = conf.startTime || "00:00";
+        const cEnd = conf.endTime || "23:59";
+        
+        // Overlap logic: (NewStart < ExistEnd) && (NewEnd > ExistStart)
+        if ((startTime < cEnd) && (endTime > cStart)) {
+            return res.status(400).json({ 
+              message: `Another event (${conf.name}) is already scheduled at ${place} between ${cStart} and ${cEnd}.` 
+            });
+        }
+    }
+
     const newEvent = new Event({
-      ...req.body,
-      date: new Date(req.body.date)
+      name, date: startOfDay, department, startTime, endTime, place, maxSeats, image, status: status || 'open'
     });
     await newEvent.save();
     res.status(201).json(newEvent);
@@ -246,20 +275,57 @@ app.get('/api/events/available', authMiddleware, async (req, res) => {
 // Register for an event
 app.post('/api/events/register', authMiddleware, async (req, res) => {
   try {
-    const { name, email, phone, department, event } = req.body;
+    const { name, email, phone, department, event, eventId } = req.body;
     
     // Fetch user to get collegeId
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // 🔍 Find the event details for timing
+    let targetEvent;
+    if (eventId) {
+      targetEvent = await Event.findById(eventId);
+    } else {
+      targetEvent = await Event.findOne({ name: event }); // Fallback to name if ID isn't provided
+    }
+
+    if (!targetEvent) return res.status(404).json({ message: 'Event not found' });
+
+    // 🔍 Check Student conflicts (overlapping registrations)
+    const existingRegistrations = await EventRegistration.find({ user_id: req.user.id });
+    
+    for (const reg of existingRegistrations) {
+        let regEvent = await Event.findById(reg.eventId);
+        if (!regEvent) {
+          regEvent = await Event.findOne({ name: reg.event });
+        }
+
+        if (regEvent && regEvent._id.toString() !== targetEvent._id.toString()) {
+            const regDateStr = new Date(regEvent.date).toISOString().split('T')[0];
+            const targetDateStr = new Date(targetEvent.date).toISOString().split('T')[0];
+
+            if (regDateStr === targetDateStr) {
+                // Default legacy/missing times to full day for safety
+                const cStart = regEvent.startTime || "00:00";
+                const cEnd = regEvent.endTime || "23:59";
+                
+                // Overlap: (NewStart < ExistEnd) && (NewEnd > ExistStart)
+                if ((targetEvent.startTime < cEnd) && (targetEvent.endTime > cStart)) {
+                    return res.status(400).json({ 
+                        message: `Access Denied: You are already registered for '${regEvent.name}' (${cStart}-${cEnd}) at this time.` 
+                    });
+                }
+            }
+        }
+    }
+
     const newRegistration = new EventRegistration({
-      name,
-      email,
-      phone,
-      department,
-      event,
-      collegeId: user.collegeId, // Saved from User account
-      user_id: req.user.id
+      name, email, phone, department,
+      event: targetEvent.name,
+      eventId: targetEvent._id,
+      collegeId: user.collegeId,
+      user_id: req.user.id,
+      registrationDate: new Date()
     });
     await newRegistration.save();
     res.status(201).json({ message: 'Successfully registered for the event' });
