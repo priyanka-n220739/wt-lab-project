@@ -164,41 +164,62 @@ app.post('/api/auth/login', async (req, res) => {
 // EVENT APIs
 // =======================
 
+// Helper to check for event conflicts (same time and place)
+const checkConflict = async (date, startTime, endTime, place, excludeId = null) => {
+  const eventDate = new Date(date);
+  const startOfDay = new Date(eventDate);
+  startOfDay.setUTCHours(0,0,0,0);
+  const endOfDay = new Date(eventDate);
+  endOfDay.setUTCHours(23,59,59,999);
+
+  const escapedPlace = place.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  
+  const query = {
+    date: { $gte: startOfDay, $lte: endOfDay },
+    place: { $regex: new RegExp(`^${escapedPlace}$`, "i") }
+  };
+
+  if (excludeId) {
+    query._id = { $ne: excludeId };
+  }
+
+  const existingAtPlace = await Event.find(query);
+
+  for (const conf of existingAtPlace) {
+      const cStart = conf.startTime || "00:00";
+      const cEnd = conf.endTime || "23:59";
+      
+      // Overlap logic: (NewStart < ExistEnd) && (NewEnd > ExistStart)
+      if ((startTime < cEnd) && (endTime > cStart)) {
+          return conf;
+      }
+  }
+  return null;
+};
+
 // ADMIN: Create Event
 app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { name, date, department, startTime, endTime, place, maxSeats, image, status } = req.body;
     
     if (!name || !date || !startTime || !endTime || !place) {
-      return res.status(400).json({ message: 'Meeting required event details (name, date, time, place) are mandatory.' });
+      return res.status(400).json({ message: 'Required event details (name, date, time, place) are mandatory.' });
+    }
+
+    if (startTime >= endTime) {
+      return res.status(400).json({ message: 'End time must be strictly after start time.' });
+    }
+
+    const conflict = await checkConflict(date, startTime, endTime, place);
+    if (conflict) {
+      return res.status(400).json({ 
+        message: `Conflict: Another event (${conflict.name}) is already scheduled at ${place} between ${conflict.startTime} and ${conflict.endTime}.` 
+      });
     }
 
     const eventDate = new Date(date);
     const startOfDay = new Date(eventDate);
     startOfDay.setUTCHours(0,0,0,0);
-    const endOfDay = new Date(eventDate);
-    endOfDay.setUTCHours(23,59,59,999);
-
-    const escapedPlace = place.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    
-    // Find all events for same place and date
-    const existingAtPlace = await Event.find({
-      date: { $gte: startOfDay, $lte: endOfDay },
-      place: { $regex: new RegExp(`^${escapedPlace}$`, "i") }
-    });
-
-    for (const conf of existingAtPlace) {
-        // Safe defaults for legacy data missing times
-        const cStart = conf.startTime || "00:00";
-        const cEnd = conf.endTime || "23:59";
-        
-        // Overlap logic: (NewStart < ExistEnd) && (NewEnd > ExistStart)
-        if ((startTime < cEnd) && (endTime > cStart)) {
-            return res.status(400).json({ 
-              message: `Another event (${conf.name}) is already scheduled at ${place} between ${cStart} and ${cEnd}.` 
-            });
-        }
-    }
 
     const newEvent = new Event({
       name, date: startOfDay, department, startTime, endTime, place, maxSeats, image, status: status || 'open'
@@ -229,11 +250,44 @@ app.get('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
 // ADMIN: Update Event
 app.put('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) => {
     try {
+      const { date, startTime, endTime, place } = req.body;
+
+      // If we are updating timing or location, check for conflicts
+      if (date || startTime || endTime || place) {
+        // Fetch current event to fill missing fields for conflict check
+        const currentEvent = await Event.findById(req.params.id);
+        if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
+
+        const checkDate = date || currentEvent.date;
+        const checkStart = startTime || currentEvent.startTime;
+        const checkEnd = endTime || currentEvent.endTime;
+        const checkPlace = place || currentEvent.place;
+
+        if (checkStart >= checkEnd) {
+          return res.status(400).json({ message: 'End time must be strictly after start time.' });
+        }
+
+        const conflict = await checkConflict(checkDate, checkStart, checkEnd, checkPlace, req.params.id);
+        if (conflict) {
+          return res.status(400).json({ 
+            message: `Conflict: Another event (${conflict.name}) is already scheduled at ${checkPlace} between ${conflict.startTime} and ${conflict.endTime}.` 
+          });
+        }
+      }
+
+      // If date is provided, normalize it
+      if (req.body.date) {
+        const d = new Date(req.body.date);
+        d.setUTCHours(0,0,0,0);
+        req.body.date = d;
+      }
+
       const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
       if (!updatedEvent) return res.status(404).json({ message: 'Event not found' });
       res.json(updatedEvent);
     } catch (err) {
-      res.status(500).json({ message: 'Server error updating event' });
+      console.error(err);
+      res.status(500).json({ message: 'Server error updating event', error: err.message });
     }
 });
 
@@ -295,6 +349,11 @@ app.post('/api/events/register', authMiddleware, async (req, res) => {
     const existingRegistrations = await EventRegistration.find({ user_id: req.user.id });
     
     for (const reg of existingRegistrations) {
+        // First check if already registered for the EXACT same event
+        if (reg.eventId && reg.eventId.toString() === targetEvent._id.toString()) {
+            return res.status(400).json({ message: `You have already registered for '${targetEvent.name}'.` });
+        }
+
         let regEvent = await Event.findById(reg.eventId);
         if (!regEvent) {
           regEvent = await Event.findOne({ name: reg.event });
@@ -305,14 +364,16 @@ app.post('/api/events/register', authMiddleware, async (req, res) => {
             const targetDateStr = new Date(targetEvent.date).toISOString().split('T')[0];
 
             if (regDateStr === targetDateStr) {
-                // Default legacy/missing times to full day for safety
+                // Default legacy/missing times for safety
                 const cStart = regEvent.startTime || "00:00";
                 const cEnd = regEvent.endTime || "23:59";
+                const tStart = targetEvent.startTime || "00:00";
+                const tEnd = targetEvent.endTime || "23:59";
                 
                 // Overlap: (NewStart < ExistEnd) && (NewEnd > ExistStart)
-                if ((targetEvent.startTime < cEnd) && (targetEvent.endTime > cStart)) {
+                if ((tStart < cEnd) && (tEnd > cStart)) {
                     return res.status(400).json({ 
-                        message: `Access Denied: You are already registered for '${regEvent.name}' (${cStart}-${cEnd}) at this time.` 
+                        message: `Time Slot Conflict: You are already registered for '${regEvent.name}' which is scheduled from ${cStart} to ${cEnd} on this day.` 
                     });
                 }
             }
