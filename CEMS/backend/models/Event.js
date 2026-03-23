@@ -9,7 +9,10 @@ const eventSchema = new mongoose.Schema({
   place: { type: String, required: true },      // Use 'place' as requested
   maxSeats: { type: Number },
   status: { type: String, enum: ['upcoming', 'open', 'closed'], default: 'upcoming' },
-  isVisibleToStudents: { type: Boolean, default: true }
+  isVisibleToStudents: { type: Boolean, default: true },
+  organizerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  accessStartDate: { type: Date },
+  accessEndDate: { type: Date }
 });
 
 // Proper indexing for faster conflict checks as requested

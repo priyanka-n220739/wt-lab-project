@@ -10,6 +10,8 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const EventRegistration = require('./models/EventRegistration');
 const Event = require('./models/Event');
+const Issue = require('./models/Issue');
+const Notification = require('./models/Notification');
 
 
 const app = express();
@@ -60,6 +62,15 @@ const adminMiddleware = (req, res, next) => {
   next();
 };
 
+const roleMiddleware = (roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Access denied: Insufficient permissions' });
+    }
+    next();
+  };
+};
+
 // =======================
 // AUTHENTICATION ROUTES
 // =======================
@@ -70,7 +81,7 @@ const DEMO_MODE = false;
 // Register User
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { role, collegeId, email, password } = req.body;
+    const { role, collegeId, email, password, name, phone, department } = req.body;
 
     // ✅ basic validation
     if (!email || !password || !role) {
@@ -97,7 +108,10 @@ app.post('/api/auth/register', async (req, res) => {
       role,
       email,
       password: hashedPassword,
-      collegeId: role === 'admin' ? null : collegeId
+      collegeId: (role === 'student') ? collegeId : null,
+      name: name || undefined,
+      phone: phone || undefined,
+      department: department || undefined
     });
 
     await newUser.save();
@@ -197,10 +211,10 @@ const checkConflict = async (date, startTime, endTime, place, excludeId = null) 
   return null;
 };
 
-// ADMIN: Create Event
-app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
+// ADMIN & ORGANIZER: Create Event
+app.post('/api/events', authMiddleware, roleMiddleware(['admin', 'organizer']), async (req, res) => {
   try {
-    const { name, date, department, startTime, endTime, place, maxSeats, image, status } = req.body;
+    const { name, date, department, startTime, endTime, place, maxSeats, image, status, organizerId, accessStartDate, accessEndDate } = req.body;
     
     if (!name || !date || !startTime || !endTime || !place) {
       return res.status(400).json({ message: 'Required event details (name, date, time, place) are mandatory.' });
@@ -221,8 +235,11 @@ app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
     const startOfDay = new Date(eventDate);
     startOfDay.setUTCHours(0,0,0,0);
 
+    const actualOrganizerId = req.user.role === 'admin' ? organizerId : req.user.id;
+
     const newEvent = new Event({
-      name, date: startOfDay, department, startTime, endTime, place, maxSeats, image, status: status || 'open'
+      name, date: startOfDay, department, startTime, endTime, place, maxSeats, image, status: status || 'open',
+      organizerId: actualOrganizerId, accessStartDate, accessEndDate
     });
     await newEvent.save();
     res.status(201).json(newEvent);
@@ -247,16 +264,30 @@ app.get('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-// ADMIN: Update Event
-app.put('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) => {
+// ADMIN & ORGANIZER: Update Event
+app.put('/api/events/:id', authMiddleware, roleMiddleware(['admin', 'organizer']), async (req, res) => {
     try {
-      const { date, startTime, endTime, place } = req.body;
+      const { date, startTime, endTime, place, organizerId, accessStartDate, accessEndDate } = req.body;
+
+      // Fetch current event to fill missing fields for conflict check
+      const currentEvent = await Event.findById(req.params.id);
+      if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
+
+      if (req.user.role === 'organizer') {
+        if (currentEvent.organizerId?.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'You can only edit your own events.' });
+        }
+        const now = new Date();
+        if (currentEvent.accessStartDate && now < currentEvent.accessStartDate) {
+            return res.status(403).json({ message: 'Access to edit this event has not started yet.' });
+        }
+        if (currentEvent.accessEndDate && now > currentEvent.accessEndDate) {
+            return res.status(403).json({ message: 'Access to edit this event has expired.' });
+        }
+      }
 
       // If we are updating timing or location, check for conflicts
       if (date || startTime || endTime || place) {
-        // Fetch current event to fill missing fields for conflict check
-        const currentEvent = await Event.findById(req.params.id);
-        if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
 
         const checkDate = date || currentEvent.date;
         const checkStart = startTime || currentEvent.startTime;
@@ -280,6 +311,13 @@ app.put('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) => 
         const d = new Date(req.body.date);
         d.setUTCHours(0,0,0,0);
         req.body.date = d;
+      }
+
+      // Admin only fields override
+      if (req.user.role !== 'admin') {
+         delete req.body.organizerId;
+         delete req.body.accessStartDate;
+         delete req.body.accessEndDate;
       }
 
       const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -320,6 +358,122 @@ app.get('/api/events/available', authMiddleware, async (req, res) => {
     } catch (err) {
       res.status(500).json({ message: 'Server error fetching available events' });
     }
+});
+
+// =======================
+// ISSUES APIs
+// =======================
+
+// ORGANIZER: Create Issue
+app.post('/api/issues', authMiddleware, roleMiddleware(['organizer']), async (req, res) => {
+  try {
+    const { eventName, description } = req.body;
+    if (!eventName || !description) return res.status(400).json({ message: 'Event name and description are required' });
+    
+    // Fetch user to get name
+    const user = await User.findById(req.user.id);
+
+    const newIssue = new Issue({
+      organizerId: req.user.id,
+      organizerName: user.name || user.email,
+      eventName,
+      description
+    });
+    await newIssue.save();
+    res.status(201).json(newIssue);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error creating issue' });
+  }
+});
+
+// ADMIN/ORGANIZER: Get Issues
+app.get('/api/issues', authMiddleware, roleMiddleware(['admin', 'organizer']), async (req, res) => {
+  try {
+    let query = {};
+    if (req.user.role === 'organizer') {
+      query.organizerId = req.user.id;
+    }
+    const issues = await Issue.find(query).sort({ dateSubmitted: -1 });
+    res.json(issues);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error fetching issues' });
+  }
+});
+
+// ADMIN: Update Issue Status
+app.put('/api/issues/:id/status', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const issue = await Issue.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+    res.json(issue);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error updating issue' });
+  }
+});
+
+// =======================
+// NOTIFICATIONS APIs
+// =======================
+
+// ANY AUTHORIZED: Get Notifications
+app.get('/api/notifications', authMiddleware, async (req, res) => {
+  try {
+    const notifications = await Notification.find({ 
+      $or: [{ userId: req.user.id }, { userId: null }] 
+    }).sort({ date: -1 });
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error fetching notifications' });
+  }
+});
+
+// ANY AUTHORIZED: Mark Notification Read
+app.put('/api/notifications/:id/read', authMiddleware, async (req, res) => {
+  try {
+    const notif = await Notification.findByIdAndUpdate(req.params.id, { read: true }, { new: true });
+    if (!notif) return res.status(404).json({ message: 'Notification not found' });
+    res.json(notif);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error updating notification' });
+  }
+});
+
+// ADMIN: Create Notification
+app.post('/api/notifications', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { userId, message, type } = req.body;
+    const notif = new Notification({ userId: userId || null, message, type });
+    await notif.save();
+    res.status(201).json(notif);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error creating notification' });
+  }
+});
+
+// =======================
+// ORGANIZERS API (Contact Chart)
+// =======================
+app.get('/api/organizers', authMiddleware, async (req, res) => {
+  try {
+    const organizers = await User.find({ role: 'organizer' }).select('-password');
+    // If student, mask email and phone
+    if (req.user.role === 'student' || req.user.role === 'volunteer') {
+      const limited = organizers.map(org => ({
+        _id: org._id,
+        name: org.name,
+        department: org.department,
+        email: '***@***', // obfuscated
+        phone: '***-***-****',
+        role: org.role
+      }));
+      return res.json(limited);
+    }
+    // Else Admin or other Organizers can see full
+    res.json(organizers);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error fetching organizers' });
+  }
 });
 
 // =======================

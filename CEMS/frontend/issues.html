@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Issues & Requests</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif;}
+    body { background: #f7f8fc; color: #2d3a4a; padding: 40px; }
+    .card { background: #fff; border: 1px solid #e8ecf4; border-radius: 12px; padding: 20px; max-width: 800px; margin: 0 auto 20px; }
+    h1, h2, h3 { margin-bottom: 20px; }
+    .fg { margin-bottom: 14px; }
+    .fg label { display: block; font-size: 0.8rem; font-weight: 600; color: #6b7a90; margin-bottom: 5px; }
+    .fg input, .fg textarea, .fg select { width: 100%; padding: 10px; border: 1px solid #e8ecf4; border-radius: 8px; outline: none; }
+    .btn { background: #f59e0b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-block; }
+    .btn:hover { background: #d97706; }
+    .btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 5px; }
+    .issue-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+    .status { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+    .status.Pending { background: #fef3c7; color: #d97706; }
+    .status.Approved { background: #d1fae5; color: #059669; }
+    .status.Rejected { background: #fee2e2; color: #dc2626; }
+    .nav { margin-bottom: 20px; max-width: 800px; margin: 0 auto 20px;}
+    .nav a { color: #f59e0b; text-decoration: none; font-weight: bold; cursor: pointer;}
+  </style>
+</head>
+<body>
+  <div class="nav"><a id="backLink">⬅ Back to Dashboard</a></div>
+  
+  <div class="card" id="submitIssueCard" style="display:none;">
+    <h2>Raise an Issue / Request</h2>
+    <div class="fg">
+      <label>Event Name</label>
+      <input id="eventName" type="text" placeholder="e.g. Venue request for Tech Fest">
+    </div>
+    <div class="fg">
+      <label>Issue Description</label>
+      <textarea id="description" rows="4" placeholder="Describe your problem or request..."></textarea>
+    </div>
+    <button class="btn" onclick="submitIssue()">Submit Issue</button>
+  </div>
+
+  <div class="card">
+    <h2 id="listTitle">My Issues</h2>
+    <div id="issuesList">Loading...</div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('cems_token');
+    if(!token) window.location.href='login.html';
+    
+    let role = '';
+    try { role = JSON.parse(atob(token.split('.')[1])).role; } catch(e){}
+
+    const link = document.getElementById('backLink');
+    if(role === 'admin') {
+      link.href = 'admin_dashboard.html';
+      document.getElementById('listTitle').innerText = 'All Issues (Admin View)';
+    } else if(role === 'organizer') {
+      link.href = 'organizer_dashboard.html';
+      document.getElementById('submitIssueCard').style.display = 'block';
+    } else {
+      window.location.href = 'student_dashboard.html';
+    }
+
+    async function fetchIssues() {
+      const res = await fetch('/api/issues', { headers: { 'Authorization': `Bearer ${token}` } });
+      const issues = await res.json();
+      const list = document.getElementById('issuesList');
+      list.innerHTML = '';
+      if(issues.length === 0) list.innerHTML = '<p>No issues found.</p>';
+      
+      issues.forEach(i => {
+        let adminControls = '';
+        if(role === 'admin') {
+          adminControls = `
+            <div style="margin-top: 10px; display:flex; gap:10px; align-items:center;">
+              <select id="status-${i._id}" style="padding: 4px; border-radius:4px;">
+                <option value="Pending" ${i.status==='Pending'?'selected':''}>Pending</option>
+                <option value="Approved" ${i.status==='Approved'?'selected':''}>Approved</option>
+                <option value="Rejected" ${i.status==='Rejected'?'selected':''}>Rejected</option>
+              </select>
+              <button class="btn btn-sm" onclick="updateStatus('${i._id}')">Update</button>
+              <span style="font-size: 0.75rem; color: #9aa3b2;">By: ${i.organizerName}</span>
+            </div>
+          `;
+        }
+
+        list.innerHTML += `
+          <div class="issue-item">
+            <h4>${i.eventName} <span class="status ${i.status}">${i.status}</span></h4>
+            <p style="font-size:0.85rem; color:#6b7a90; margin-top:5px;">${i.description}</p>
+            <p style="font-size:0.75rem; color:#9aa3b2; margin-top:5px;">Submitted: ${new Date(i.dateSubmitted).toLocaleString()}</p>
+            ${adminControls}
+          </div>
+        `;
+      });
+    }
+
+    async function updateStatus(id) {
+      const status = document.getElementById(`status-${id}`).value;
+      const res = await fetch(`/api/issues/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status })
+      });
+      if(res.ok) { alert('Status updated'); fetchIssues(); }
+      else alert('Failed to update status');
+    }
+
+    async function submitIssue() {
+      const eventName = document.getElementById('eventName').value;
+      const description = document.getElementById('description').value;
+      if(!eventName || !description) return alert("Fill all fields");
+
+      try {
+        const res = await fetch('/api/issues', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ eventName, description })
+        });
+        if(res.ok) {
+          alert('Issue submitted');
+          document.getElementById('eventName').value='';
+          document.getElementById('description').value='';
+          fetchIssues();
+        } else {
+          alert('Error submitting issue');
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    fetchIssues();
+  </script>
+</body>
+</html>

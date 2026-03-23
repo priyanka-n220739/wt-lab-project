@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Notifications</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif;}
+    body { background: #f7f8fc; color: #2d3a4a; padding: 40px; }
+    .card { background: #fff; border: 1px solid #e8ecf4; border-radius: 12px; padding: 20px; max-width: 800px; margin: 0 auto 20px; }
+    h1, h2 { margin-bottom: 20px; }
+    .notif-item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; align-items: center; justify-content: space-between; }
+    .notif-item.unread { background: #f0f4ff; border-radius: 8px; padding: 15px; border-bottom: none; margin-bottom: 10px; }
+    .notif-content { flex: 1; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; }
+    .info { background: #eef2ff; color: #1a56db; }
+    .success { background: #ecfdf5; color: #15803d; }
+    .warning { background: #fffbeb; color: #b45309; }
+    .error { background: #fee2e2; color: #dc2626; }
+    .btn { background: #1a56db; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .btn:hover { background: #1447c0; }
+    .nav { margin-bottom: 20px; text-align: left; max-width: 800px; margin: 0 auto 20px;}
+    .nav a { color: #1a56db; text-decoration: none; font-weight: bold; cursor: pointer; }
+    .meta { font-size: 0.75rem; color: #9aa3b2; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <div class="nav"><a id="backLink">⬅ Back to Dashboard</a></div>
+  <div class="card">
+    <h2>🔔 Your Notifications</h2>
+    <div id="notifList">Loading...</div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('cems_token');
+    if(!token) window.location.href='login.html';
+
+    let role = 'student';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      role = payload.role;
+    } catch(e) {}
+
+    const link = document.getElementById('backLink');
+    if(role === 'admin') link.href = 'admin_dashboard.html';
+    else if(role === 'organizer') link.href = 'organizer_dashboard.html';
+    else link.href = 'student_dashboard.html';
+
+    async function fetchNotifs() {
+      const res = await fetch('/api/notifications', { headers: { 'Authorization': `Bearer ${token}` } });
+      const notifs = await res.json();
+      const list = document.getElementById('notifList');
+      list.innerHTML = '';
+      if(notifs.length === 0) list.innerHTML = '<p>No notifications.</p>';
+      
+      notifs.forEach(n => {
+        list.innerHTML += `
+          <div class="notif-item ${!n.read ? 'unread' : ''}">
+            <div class="notif-content">
+              <span class="badge ${n.type}">${n.type.toUpperCase()}</span>
+              <p>${n.message}</p>
+              <div class="meta">${new Date(n.date).toLocaleString()}</div>
+            </div>
+            ${!n.read ? `<button class="btn" onclick="markRead('${n._id}')">Mark Read</button>` : `<span style="font-size: 0.8rem; color: #9aa3b2;">✓ Read</span>`}
+          </div>
+        `;
+      });
+    }
+
+    async function markRead(id) {
+      await fetch(`/api/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchNotifs();
+    }
+
+    fetchNotifs();
+  </script>
+</body>
+</html>

@@ -318,8 +318,10 @@
     <a href="#registrationsSection" class="nav-link"><span class="icon">📋</span> Registrations</a>
     <div class="nav-section">Manage</div>
     <a href="#" class="nav-link" onclick="openModal(); return false;"><span class="icon">➕</span> Add Event</a>
+    <a href="issues.html" class="nav-link"><span class="icon">⚠️</span> View Issues</a>
+    <a href="contact_chart.html" class="nav-link"><span class="icon">📒</span> Organizers</a>
+    <a href="notifications.html" class="nav-link"><span class="icon">🔔</span> Notifications</a>
     <a href="events.html" class="nav-link"><span class="icon">🏛️</span> Departments</a>
-    <a href="#" class="nav-link"><span class="icon">📊</span> Reports</a>
     <a href="#" class="nav-link"><span class="icon">⚙️</span> Settings</a>
     <a href="#" class="nav-link" onclick="logout()"><span class="icon">🚪</span> Logout</a>
   </nav>
@@ -450,10 +452,11 @@
   </div>
 </div>
 
-<!-- ADD EVENT MODAL -->
+<!-- ADD/EDIT EVENT MODAL -->
 <div class="overlay" id="overlay" onclick="outsideClose(event)">
-  <div class="modal">
-    <h2>➕ Add New Event</h2>
+  <div class="modal" style="width: 500px">
+    <h2 id="modalTitle">➕ Add/Edit Event</h2>
+    <input type="hidden" id="eId">
     <div class="fg">
       <label>Event Name</label>
       <input id="eName" type="text" placeholder="e.g. Tech Symposium 2026"/>
@@ -469,12 +472,25 @@
       </div>
     </div>
     <div class="frow">
+      <div class="fg"><label>Start Time</label><input id="eStart" type="time" value="09:00"/></div>
+      <div class="fg"><label>End Time</label><input id="eEnd" type="time" value="17:00"/></div>
+    </div>
+    <div class="frow">
       <div class="fg"><label>Venue</label><input id="eVenue" type="text" placeholder="e.g. Auditorium A"/></div>
       <div class="fg"><label>Max Seats</label><input id="eSeats" type="number" placeholder="100"/></div>
     </div>
+    <hr style="margin: 15px 0; border: none; border-top: 1px solid #e8ecf4;"/>
+    <div class="fg">
+      <label>Assign Organizer (User ID) [Optional]</label>
+      <input id="eOrgId" type="text" placeholder="Paste Organizer's ObjectId here"/>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Access Start Date</label><input id="eAccessStart" type="date"/></div>
+      <div class="fg"><label>Access End Date</label><input id="eAccessEnd" type="date"/></div>
+    </div>
     <div class="modal-btns">
       <button class="btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="addEvent()">Create Event</button>
+      <button class="btn-primary" onclick="saveEvent()">Save Event</button>
     </div>
   </div>
 </div>
@@ -534,6 +550,7 @@
         <td>${e.department}</td>
         <td><span class="badge ${bc}">${e.status}</span></td>
         <td>
+          <button class="act edit" onclick='openEditModal(${JSON.stringify(e).replace(/'/g, "&#39;")})'>Edit</button>
           <button class="act del" onclick="delEvent('${e._id}')">Delete</button>
         </td>
       </tr>`;
@@ -694,33 +711,75 @@
   // Real-time updates: refresh dashboard data every 10 seconds
   setInterval(initDashboard, 10000);
 
-  // ── MODAL ──
-  function openModal()    { document.getElementById('overlay').classList.add('open'); }
+  function openModal()    { 
+    document.getElementById('overlay').classList.add('open'); 
+    document.getElementById('modalTitle').innerText = '➕ Add New Event';
+    document.getElementById('eId').value = '';
+    document.getElementById('eName').value = '';
+    document.getElementById('eDate').value = '';
+    document.getElementById('eStart').value = '09:00';
+    document.getElementById('eEnd').value = '17:00';
+    document.getElementById('eVenue').value = '';
+    document.getElementById('eSeats').value = '';
+    document.getElementById('eOrgId').value = '';
+    document.getElementById('eAccessStart').value = '';
+    document.getElementById('eAccessEnd').value = '';
+  }
+  function openEditModal(ev) {
+    document.getElementById('overlay').classList.add('open'); 
+    document.getElementById('modalTitle').innerText = '✏️ Edit Event';
+    document.getElementById('eId').value = ev._id;
+    document.getElementById('eName').value = ev.name || '';
+    document.getElementById('eDate').value = ev.date ? ev.date.substring(0,10) : '';
+    document.getElementById('eStart').value = ev.startTime || '09:00';
+    document.getElementById('eEnd').value = ev.endTime || '17:00';
+    document.getElementById('eDept').value = ev.department || 'CSE';
+    document.getElementById('eVenue').value = ev.place || '';
+    document.getElementById('eSeats').value = ev.maxSeats || '';
+    document.getElementById('eOrgId').value = ev.organizerId || '';
+    document.getElementById('eAccessStart').value = ev.accessStartDate ? ev.accessStartDate.substring(0,10) : '';
+    document.getElementById('eAccessEnd').value = ev.accessEndDate ? ev.accessEndDate.substring(0,10) : '';
+  }
   function closeModal()   { document.getElementById('overlay').classList.remove('open'); }
   function outsideClose(e){ if (e.target.id === 'overlay') closeModal(); }
 
-  async function addEvent() {
+  async function saveEvent() {
+    const id = document.getElementById('eId').value;
     const name = document.getElementById('eName').value.trim();
     const date = document.getElementById('eDate').value;
     const department = document.getElementById('eDept').value;
-    const venue = document.getElementById('eVenue').value;
+    const startTime = document.getElementById('eStart').value;
+    const endTime = document.getElementById('eEnd').value;
+    const place = document.getElementById('eVenue').value;
     const maxSeats = document.getElementById('eSeats').value;
+    const organizerId = document.getElementById('eOrgId').value.trim() || undefined;
+    const accessStartDate = document.getElementById('eAccessStart').value || undefined;
+    const accessEndDate = document.getElementById('eAccessEnd').value || undefined;
 
-    if (!name || !date) { alert('Please enter event name and date.'); return; }
+    if (!name || !date || !startTime || !endTime || !place) { 
+      alert('Please enter event name, date, time, and venue.'); return; 
+    }
+
+    const payload = { name, date, department, startTime, endTime, place, maxSeats, organizerId, accessStartDate, accessEndDate };
+    const url = id ? `/api/events/${id}` : `/api/events`;
+    const method = id ? 'PUT' : 'POST';
 
     try {
-        await fetch('/api/events', {
-            method: 'POST',
+        const res = await fetch(url, {
+            method,
             headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ name, date, department, venue, maxSeats, status: 'open' })
+            body: JSON.stringify(payload)
         });
+        const data = await res.json();
+        if(!res.ok) { alert(data.message); return; }
         fetchEvents();
         closeModal();
     } catch (err) {
-        console.error('Error adding event:', err);
+        console.error('Error saving event:', err);
+        alert('Server error.');
     }
   }
 </script>
