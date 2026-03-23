@@ -17,7 +17,11 @@
   </style>
 </head>
 <body>
-  <div class="nav"><a id="backLink">⬅ Back to Dashboard</a></div>
+  <div class="nav">
+    <a id="backLink">⬅ Back to Dashboard</a>
+    <a href="landing.html" style="margin-left:16px;">Home</a>
+    <a href="register-event.html" style="margin-left:16px;">Browse Events</a>
+  </div>
   <div class="card">
     <h2>📒 Organizer Contact Chart</h2>
     <table class="tbl">
@@ -38,7 +42,7 @@
 
   <script>
     const token = localStorage.getItem('cems_token');
-    if(!token) window.location.href='login.html';
+    if(!token) { window.location.href='login.html'; }
 
     let role = 'student';
     try {

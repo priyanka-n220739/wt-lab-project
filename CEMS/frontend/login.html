@@ -25,6 +25,8 @@ async function loginsuccess() {
             localStorage.setItem('cems_token', data.token);
             if (data.role === 'admin') {
                 window.location.href = "admin_dashboard.html";
+            } else if (data.role === 'organizer') {
+                window.location.href = "organizer_dashboard.html";
             } else {
                 window.location.href = "student_dashboard.html";
             }
@@ -175,8 +177,9 @@ text-decoration:none;
 <form>
 
 <div class="radio-group">
-    <label><input type="radio" name="role" value="student" checked> Student Login</label>
-    <label><input type="radio" name="role" value="admin"> Admin Login</label>
+    <label><input type="radio" name="role" value="student" checked> Student</label>
+    <label><input type="radio" name="role" value="admin"> Admin</label>
+    <label><input type="radio" name="role" value="organizer"> Organizer</label>
 </div>
 
 <div class="input-box">
@@ -191,7 +194,8 @@ text-decoration:none;
 
 <button type="button" onclick="loginsuccess()">Login</button>
 
-<a href="landing.html" class="back">⬅ Back</a>
+<a href="landing.html" class="back">⬅ Back to Home</a>
+<a href="register.html" class="back" style="font-size: 14px; margin-top: 10px; color: lightcyan;">New? Register here</a>
 
 </form>
 

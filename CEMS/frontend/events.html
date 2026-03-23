@@ -119,18 +119,14 @@ function deleteEvent(selectId){
 
 function updateDashboardLink() {
     const token = localStorage.getItem('cems_token');
-    if (!token) return;
+    if (!token) { document.getElementById('dashLink').href = 'login.html'; return; }
     try {
         const role = JSON.parse(atob(token.split('.')[1])).role;
         const dashLink = document.getElementById('dashLink');
-        if (role === 'admin') {
-            dashLink.href = "admin_dashboard.html";
-        } else {
-            dashLink.href = "student_dashboard.html";
-        }
-    } catch (e) {
-        console.error("Error updating link", e);
-    }
+        if (role === 'admin') dashLink.href = "admin_dashboard.html";
+        else if (role === 'organizer') dashLink.href = "organizer_dashboard.html";
+        else dashLink.href = "student_dashboard.html";
+    } catch (e) { document.getElementById('dashLink').href = 'login.html'; }
 }
 document.addEventListener('DOMContentLoaded', updateDashboardLink);
 </script>
@@ -140,15 +136,14 @@ document.addEventListener('DOMContentLoaded', updateDashboardLink);
 <body>
 
 <div class="navbar">
-<div class="logo">CollegeEvents</div>
-
+<div class="logo"><a href="landing.html" style="color:inherit;text-decoration:none;">EduEvents</a></div>
 <ul class="nav-links">
-<li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
-<li><a href="student_dashboard.html" id="dashLink"><i class="fas fa-th-large"></i> Dashboard</a></li>
-<li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
-<li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+<li><a href="landing.html">Home</a></li>
+<li><a href="home.html">Campus</a></li>
+<li><a href="register-event.html">Browse Events</a></li>
+<li><a href="student_dashboard.html" id="dashLink">Dashboard</a></li>
+<li><a href="about.html">About</a></li>
 </ul>
-
 </div>
 
 <div class="heading">

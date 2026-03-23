@@ -4,6 +4,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Organizer Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/features/notifications/toast.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     /* Styling similar to admin dashboard */
@@ -59,13 +62,17 @@
 
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <h2>🎓 EduEvents</h2>
+    <h2><a href="landing.html" style="color:#f59e0b;text-decoration:none;">🎓 EduEvents</a></h2>
     <p>Organizer Portal</p>
   </div>
   <nav>
     <div class="nav-section">Menu</div>
     <a href="organizer_dashboard.html" class="nav-link active"><span class="icon">🏠</span> Dashboard</a>
     <a href="#" class="nav-link" onclick="openModal()"><span class="icon">➕</span> Create Event</a>
+    <a href="register-event.html" class="nav-link"><span class="icon">📋</span> Browse Events</a>
+    <div class="nav-section">Attendance</div>
+    <a href="features/attendance/attendance.html" class="nav-link"><span class="icon">📊</span> Attendance</a>
+    <a href="features/qr/scanner.html" class="nav-link"><span class="icon">📷</span> Scan Student QR</a>
     <a href="#registrationsSection" class="nav-link"><span class="icon">📋</span> View Students</a>
     <a href="issues.html" class="nav-link"><span class="icon">⚠️</span> Issues / Requests</a>
     <a href="notifications.html" class="nav-link"><span class="icon">🔔</span> Notifications</a>
@@ -117,6 +124,7 @@
     <div class="card" id="registrationsSection">
       <div class="card-head">
         <h3>👥 Registered Students for My Events</h3>
+        <button class="btn-primary" onclick="exportCSV()" style="font-size:0.75rem; padding: 6px 12px; background:#10b981;">📥 Export CSV</button>
       </div>
       <table class="tbl">
         <thead>
@@ -183,7 +191,7 @@
     } catch (e) { window.location.href = 'organizer_login.html'; }
   }
 
-  function logout() { localStorage.removeItem('cems_token'); window.location.href = 'organizer_login.html'; }
+  function logout() { localStorage.removeItem('cems_token'); window.location.href = 'landing.html'; }
 
   function openModal() { document.getElementById('overlay').classList.add('open'); document.getElementById('eId').value=''; document.getElementById('modalTitle').innerText='➕ Create Event'; }
   function openEditModal(ev) {
@@ -234,6 +242,8 @@
       // Filter for only this organizer's events
       const myEventNames = events.map(e => e.name);
       const myRegs = regs.filter(r => myEventNames.includes(r.event));
+      window.organizerRegs = myRegs; // save globally for CSV export
+
       const stb = document.getElementById('studentsTbody');
       stb.innerHTML = '';
       myRegs.forEach(r => {
@@ -249,6 +259,22 @@
   }
 
   fetchData();
+
+  function exportCSV() {
+    if(!window.organizerRegs || window.organizerRegs.length === 0) return alert('No students to export.');
+    let csvContent = "data:text/csv;charset=utf-8,Student Name,Email,Phone,Event,Registration Date\n";
+    window.organizerRegs.forEach(r => {
+      let row = [r.name, r.email, r.phone, r.event, new Date(r.registrationDate).toLocaleDateString()].join(",");
+      csvContent += row + "\r\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "organizer_event_registrations.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
   async function saveEvent() {
     const id = document.getElementById('eId').value;
@@ -277,5 +303,13 @@
     } catch(err) { alert('Error saving event'); }
   }
 </script>
+<script src="chatbot.js"></script>
+    <!-- Advanced Features Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/features/notifications/toast.js"></script>
+    <script src="/features/notifications/smart-notifications.js"></script>
+    <script src="/features/realtime/socket-client.js"></script>
+    <script src="/features/analytics/charts.js"></script>
+    <script src="/features/pwa/install.js"></script>
 </body>
 </html>

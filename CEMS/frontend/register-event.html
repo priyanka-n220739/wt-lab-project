@@ -42,6 +42,8 @@
 .event-details { margin-bottom: 20px; flex-grow: 1; }
 .detail-item { display: flex; align-items: center; margin-bottom: 12px; color: #6b7a90; font-size: 0.9rem; }
 .detail-item i { width: 25px; color: #007BFF; font-size: 1.1rem; }
+.countdown { margin: 12px 0; padding: 10px; background: linear-gradient(135deg, #eef2ff, #e0f2fe); border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: #1e40af; text-align: center; }
+.countdown.ended { background: #f1f5f9; color: #64748b; }
 .btn-register-card { width: 100%; padding: 12px; background: #007BFF; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit;}
 .btn-register-card:hover { background: #0056b3; }
 
@@ -78,12 +80,13 @@
 <body style="background:#f4f7fb; margin:0;">
 
 <nav class="navbar">
-<div class="logo"><i class="fas fa-user-graduate"></i> EduEvents</div>
+<div class="logo"><a href="landing.html" style="color:white;text-decoration:none;"><i class="fas fa-user-graduate"></i> EduEvents</a></div>
 <ul class="nav-links">
-<li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
-<li><a href="student_dashboard.html" onclick="if(localStorage.getItem('cems_token')){let role=JSON.parse(atob(localStorage.getItem('cems_token').split('.')[1])).role; if(role==='admin') {window.location.href='admin_dashboard.html'; return false;}}"><i class="fas fa-th-large"></i> Dashboard</a></li>
-<li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
-<li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+<li><a href="landing.html"><i class="fas fa-home"></i> Home</a></li>
+<li><a href="register-event.html"><i class="fas fa-calendar-alt"></i> Browse Events</a></li>
+<li><a href="#" id="navDashboard"><i class="fas fa-th-large"></i> Dashboard</a></li>
+<li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
+<li><a href="login.html" id="navLogin">Login</a></li>
 </ul>
 </nav>
 
@@ -108,6 +111,7 @@
         
         <form id="eventForm">
             <input type="hidden" id="eventTargetName">
+            <input type="hidden" id="eventTargetId">
             
             <div class="form-group">
                 <label>Full Name</label>
@@ -137,7 +141,7 @@
             <button class="btn-submit" type="submit"><i class="fas fa-check-circle"></i> Complete Registration</button>
         </form>
         
-        <div class="success" id="successMsg">✅ Registration Successful! Returning you back...</div>
+        <div class="success" id="successMsg">✅ Registration Successful! <a href="features/qr/passes.html" style="color:#065f46;text-decoration:underline;">View My Event Pass →</a></div>
     </div>
 </div>
 
@@ -149,7 +153,30 @@ if (!token) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const token = localStorage.getItem("cems_token");
+  const navDashboard = document.getElementById("navDashboard");
+  const navLogin = document.getElementById("navLogin");
+  if (token) {
     try {
+      const role = JSON.parse(atob(token.split(".")[1])).role;
+      navDashboard.href = role === "admin" ? "admin_dashboard.html" : (role === "organizer" ? "organizer_dashboard.html" : "student_dashboard.html");
+      navDashboard.innerHTML = '<i class="fas fa-th-large"></i> Dashboard';
+      navDashboard.style.display = "";
+    } catch (e) {}
+    navLogin.href = "#";
+    navLogin.innerHTML = "Logout";
+    navLogin.onclick = () => { localStorage.removeItem("cems_token"); window.location.href = "landing.html"; };
+  } else {
+    navDashboard.style.display = "none";
+    navLogin.href = "login.html";
+    navLogin.innerHTML = "Login";
+  }
+
+  try {
+        if (!token) {
+          document.getElementById("eventsGrid").innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:40px;"><p style="color:#64748b;font-size:1.1rem;">Please log in to browse and register for events.</p><a href="login.html" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#1a56db;color:white;border-radius:8px;text-decoration:none;">Login</a></div>';
+          return;
+        }
         const response = await fetch('/api/events/available', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -164,7 +191,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         events.forEach(ev => {
             const dateStr = new Date(ev.date).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' });
-            
+            const [h, m] = (ev.startTime || '09:00').split(':');
+            const eventStart = new Date(ev.date);
+            eventStart.setHours(parseInt(h,10), parseInt(m,10), 0, 0);
+            const countdownId = 'countdown-' + ev._id;
             const card = document.createElement("div");
             card.className = "event-card";
             card.innerHTML = `
@@ -174,22 +204,52 @@ document.addEventListener("DOMContentLoaded", async () => {
                 </div>
                 <div class="event-details">
                     <div class="detail-item"><i class="fas fa-calendar-check"></i> <span>${dateStr}</span></div>
-                    <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.venue || 'Venue TBA'}</span></div>
+                    <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.place || ev.venue || 'Venue TBA'}</span></div>
                     <div class="detail-item"><i class="fas fa-users"></i> <span>Seats: ${ev.maxSeats || 'Unlimited'}</span></div>
+                    <div class="countdown" id="${countdownId}">⏳ Calculating...</div>
                 </div>
-                <button class="btn-register-card" onclick="openModal('${ev.name}')">Register Now</button>
+                <button class="btn-register-card" data-event-name="${ev.name.replace(/"/g, '&quot;')}" data-event-id="${ev._id}" onclick="openModal(this.dataset.eventName, this.dataset.eventId)">Register Now</button>
             `;
             grid.appendChild(card);
+            updateCountdown(countdownId, eventStart);
         });
+        setInterval(() => {
+            events.forEach(ev => {
+                const [h, m] = (ev.startTime || '09:00').split(':');
+                const eventStart = new Date(ev.date);
+                eventStart.setHours(parseInt(h,10), parseInt(m,10), 0, 0);
+                updateCountdown('countdown-' + ev._id, eventStart);
+            });
+        }, 1000);
 
     } catch (err) {
         console.error("Failed to load events", err);
     }
 });
 
-function openModal(eventName) {
+function updateCountdown(id, eventStart) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const now = new Date();
+    const diff = eventStart - now;
+    if (diff <= 0) {
+        el.textContent = 'Event started / ended';
+        el.classList.add('ended');
+        return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    if (d > 0) el.textContent = '⏳ Starts in: ' + d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+    else el.textContent = '⏳ Starts in: ' + h + 'h ' + m + 'm ' + s + 's';
+    el.classList.remove('ended');
+}
+
+function openModal(eventName, eventId) {
     document.getElementById("modalEventTitle").innerText = `Register for ${eventName}`;
     document.getElementById("eventTargetName").value = eventName;
+    document.getElementById("eventTargetId").value = eventId || '';
     
     // Reset from potential previous attempts
     document.getElementById("successMsg").style.display = "none";
@@ -218,6 +278,7 @@ document.getElementById("eventForm").addEventListener("submit", async function(e
     let phone = document.getElementById("phone").value;
     let department = document.getElementById("department").value;
     let event = document.getElementById("eventTargetName").value;
+    let eventId = document.getElementById("eventTargetId").value || null;
 
     try {
         const response = await fetch('/api/events/register', {
@@ -226,7 +287,7 @@ document.getElementById("eventForm").addEventListener("submit", async function(e
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ name, email, phone, department, event })
+            body: JSON.stringify({ name, email, phone, department, event, eventId })
         });
 
         const data = await response.json();
@@ -235,11 +296,8 @@ document.getElementById("eventForm").addEventListener("submit", async function(e
             document.getElementById("eventForm").style.display = "none";
             document.getElementById("successMsg").style.display = "block";
             document.getElementById("eventForm").reset();
-            
-            // Auto close modal
-            setTimeout(() => {
-                closeModal();
-            }, 2500);
+            if (typeof showToast === 'function') showToast('Registration successful! Check My Event Passes for your QR.', 'success');
+            setTimeout(() => closeModal(), 2500);
         } else {
             alert("Registration failed: " + data.message);
         }
@@ -248,6 +306,8 @@ document.getElementById("eventForm").addEventListener("submit", async function(e
     }
 });
 </script>
-
+<link rel="stylesheet" href="/features/notifications/toast.css">
+<script src="/features/notifications/toast.js"></script>
+<script src="/features/notifications/smart-notifications.js"></script>
 </body>
 </html>

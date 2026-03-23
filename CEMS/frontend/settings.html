@@ -233,12 +233,16 @@ function renderSidebar() {
         container.innerHTML = `
         <aside class="sidebar">
           <div class="sidebar-logo">
-            <h2>🎓 EduEvents</h2>
+            <h2><a href="landing.html" style="color:#1a56db;text-decoration:none;">🎓 EduEvents</a></h2>
             <p>Admin Control Panel</p>
           </div>
           <nav>
             <div class="nav-section">Main Menu</div>
             <a href="admin_dashboard.html" class="nav-link"><span class="icon">🏠</span> Dashboard</a>
+            <a href="features/attendance/attendance.html" class="nav-link"><span class="icon">📊</span> Attendance</a>
+            <a href="features/qr/scanner.html" class="nav-link"><span class="icon">📷</span> Scan Student QR</a>
+            <a href="features/fraud/fraud-alerts.html" class="nav-link"><span class="icon">🛡️</span> Fraud Management</a>
+            <a href="register-event.html" class="nav-link"><span class="icon">📋</span> Browse Events</a>
             <a href="college-events.html" class="nav-link"><span class="icon">📅</span> Events</a>
             <a href="admin_dashboard.html#registrationsSection" class="nav-link"><span class="icon">📋</span> Registrations</a>
             <div class="nav-section">Manage</div>
@@ -258,6 +262,37 @@ function renderSidebar() {
         `;
         document.getElementById('roleTitle').innerText = "Admin Settings";
         document.getElementById('displayName').innerText = "Administrator Account";
+    } else if (role === 'organizer') {
+        document.body.classList.add('student-mode');
+        document.getElementById('mainContentWrapper').classList.add('student-mode');
+        document.getElementById('profilePreview').src = "https://ui-avatars.com/api/?name=Or&background=f59e0b&color=fff&size=200";
+        container.innerHTML = `
+        <aside class="sidebar student-mode">
+          <div class="sidebar-logo student-mode">
+            <h2><a href="landing.html" style="color:#f59e0b;text-decoration:none;">🎓 EduEvents</a></h2>
+            <p>Organizer Portal</p>
+          </div>
+          <nav>
+            <div class="nav-section">Menu</div>
+            <a href="organizer_dashboard.html" class="nav-link"><span class="icon">🏠</span> Dashboard</a>
+            <a href="features/attendance/attendance.html" class="nav-link"><span class="icon">📊</span> Attendance</a>
+            <a href="features/qr/scanner.html" class="nav-link"><span class="icon">📷</span> Scan Student QR</a>
+            <a href="register-event.html" class="nav-link"><span class="icon">📋</span> Browse Events</a>
+            <div class="nav-section">Account</div>
+            <a href="settings.html" class="nav-link active"><span class="icon">⚙️</span> Settings</a>
+            <a href="#" class="nav-link" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+          </nav>
+          <div class="sidebar-footer">
+            <div class="user-avatar" style="background:#f59e0b">OR</div>
+            <div>
+              <div class="user-name">Organizer</div>
+              <div class="user-role">Event Staff</div>
+            </div>
+          </div>
+        </aside>
+        `;
+        document.getElementById('roleTitle').innerText = "Organizer Settings";
+        document.getElementById('displayName').innerText = "Organizer Account";
     } else {
         document.body.classList.add('student-mode');
         document.getElementById('mainContentWrapper').classList.add('student-mode');
@@ -266,13 +301,14 @@ function renderSidebar() {
         container.innerHTML = `
         <aside class="sidebar student-mode">
           <div class="sidebar-logo student-mode">
-            <h2>🎓 EduEvents</h2>
+            <h2><a href="landing.html" style="color:#10b981;text-decoration:none;">🎓 EduEvents</a></h2>
             <p>Student Portal</p>
           </div>
           <nav class="student-mode">
             <div class="nav-section">My Portal</div>
             <a href="student_dashboard.html" class="nav-link"><span class="icon">🏠</span> Dashboard</a>
             <a href="register-event.html" class="nav-link"><span class="icon">📅</span> Browse Events</a>
+            <a href="features/qr/passes.html" class="nav-link"><span class="icon">🎟️</span> My Event Passes</a>
             <div class="nav-section">Account</div>
             <a href="settings.html" class="nav-link active"><span class="icon">⚙️</span> Settings</a>
             <a href="#" class="nav-link" onclick="logout()"><span class="icon">🚪</span> Logout</a>
@@ -292,11 +328,9 @@ function renderSidebar() {
 }
 
 function goBack() {
-    if (role === 'admin') {
-        window.location.href = 'admin_dashboard.html';
-    } else {
-        window.location.href = 'student_dashboard.html';
-    }
+    if (role === 'admin') window.location.href = 'admin_dashboard.html';
+    else if (role === 'organizer') window.location.href = 'organizer_dashboard.html';
+    else window.location.href = 'student_dashboard.html';
 }
 
 document.addEventListener("DOMContentLoaded", renderSidebar);

@@ -4,6 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Student Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/features/notifications/toast.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -98,13 +100,14 @@
 
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <h2>🎓 EduEvents</h2>
+    <h2><a href="landing.html" style="color:#10b981;text-decoration:none;">🎓 EduEvents</a></h2>
     <p>Student Portal</p>
   </div>
   <nav>
     <div class="nav-section">My Portal</div>
     <a href="#" class="nav-link active"><span class="icon">🏠</span> Dashboard</a>
     <a href="register-event.html" class="nav-link"><span class="icon">📅</span> Browse Events</a>
+    <a href="features/qr/passes.html" class="nav-link"><span class="icon">🎟️</span> My QR Passes</a>
     <a href="contact_chart.html" class="nav-link"><span class="icon">📒</span> Contact Organizers</a>
     <a href="notifications.html" class="nav-link"><span class="icon">🔔</span> Notifications</a>
     <div class="nav-section">Account</div>
@@ -224,7 +227,7 @@
 
   function logout() {
     localStorage.removeItem('cems_token');
-    window.location.href = 'login.html';
+    window.location.href = 'landing.html';
   }
 
   async function fetchMyEvents() {
@@ -259,5 +262,12 @@
 
   fetchMyEvents();
 </script>
+<script src="chatbot.js"></script>
+    <!-- Advanced Features Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/features/notifications/toast.js"></script>
+    <script src="/features/notifications/smart-notifications.js"></script>
+    <script src="/features/realtime/socket-client.js"></script>
+    <script src="/features/pwa/install.js"></script>
 </body>
 </html>

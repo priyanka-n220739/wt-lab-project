@@ -4,6 +4,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Event Management Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/features/notifications/toast.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
@@ -308,16 +311,21 @@
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <h2>🎓 EduEvents</h2>
+    <h2><a href="landing.html" style="color:#1a56db;text-decoration:none;">🎓 EduEvents</a></h2>
     <p>College Event Management</p>
   </div>
   <nav>
     <div class="nav-section">Main Menu</div>
     <a href="#" class="nav-link active"><span class="icon">🏠</span> Dashboard</a>
     <a href="college-events.html" class="nav-link"><span class="icon">📅</span> Events</a>
+    <a href="register-event.html" class="nav-link"><span class="icon">📋</span> Browse Events</a>
     <a href="#registrationsSection" class="nav-link"><span class="icon">📋</span> Registrations</a>
+    <div class="nav-section">Attendance & QR</div>
+    <a href="features/attendance/attendance.html" class="nav-link"><span class="icon">📊</span> Attendance</a>
+    <a href="features/qr/scanner.html" class="nav-link"><span class="icon">📷</span> Scan Student QR</a>
     <div class="nav-section">Manage</div>
     <a href="#" class="nav-link" onclick="openModal(); return false;"><span class="icon">➕</span> Add Event</a>
+    <a href="features/fraud/fraud-alerts.html" class="nav-link"><span class="icon">🛡️</span> Fraud Management</a>
     <a href="issues.html" class="nav-link"><span class="icon">⚠️</span> View Issues</a>
     <a href="contact_chart.html" class="nav-link"><span class="icon">📒</span> Organizers</a>
     <a href="notifications.html" class="nav-link"><span class="icon">🔔</span> Notifications</a>
@@ -429,10 +437,20 @@
       </div>
     </div>
 
+    <!-- FRAUD ALERTS (Admin only) -->
+    <div class="card" id="fraudAlertsCard" style="display:none;">
+      <div class="card-head">
+        <h3>🛡️ Fraud Alerts</h3>
+        <a href="features/fraud/fraud-alerts.html" class="link-sm">View All →</a>
+      </div>
+      <div id="fraudAlertsContent">Loading...</div>
+    </div>
+
     <!-- REGISTERED STUDENTS -->
     <div class="card" id="registrationsSection">
       <div class="card-head">
         <h3>👥 Registered Students</h3>
+        <button class="btn-primary" onclick="exportAdminCSV()" style="font-size:0.75rem; padding: 6px 12px; background:#10b981;">📥 Export CSV</button>
       </div>
       <table class="tbl">
         <thead>
@@ -515,7 +533,7 @@
 
   function logout() {
     localStorage.removeItem('cems_token');
-    window.location.href = 'login.html';
+    window.location.href = 'landing.html';
   }
 
   let events = [];
@@ -636,6 +654,7 @@
 
   // Fetch Registrations
   let registrationsList = [];
+  let adminRegs = []; // Global variable to store registrations for export
   async function fetchRegistrations() {
     try {
         const res = await fetch('/api/events/registrations', {
@@ -643,6 +662,8 @@
         });
         const regs = await res.json();
         registrationsList = regs;
+        adminRegs = regs;
+        window.adminRegs = regs; // For CSV export
 
         if (!Array.isArray(regs)) {
             console.error('Expected array of registrations, got:', regs);
@@ -701,10 +722,28 @@
     }
 }
 
-  // Init Data Requests
+  async function fetchFraudAlerts() {
+    try {
+      const res = await fetch('/api/fraud/alerts', { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.status !== 200) return;
+      const alerts = await res.json();
+      const card = document.getElementById('fraudAlertsCard');
+      const content = document.getElementById('fraudAlertsContent');
+      if (alerts.length === 0) { card.style.display = 'none'; return; }
+      card.style.display = 'block';
+      content.innerHTML = alerts.map(a => `
+        <div style="padding:10px;border:1px solid #fef3c7;border-radius:8px;margin-bottom:8px;background:#fffbeb;">
+          <strong>⚠️ Suspicious IP:</strong> ${a.ip} - ${a.count} registrations in 1hr
+          ${a.emails && a.emails.length ? `<br><small>Emails: ${a.emails.slice(0,3).join(', ')}${a.emails.length>3?'...':''}</small>` : ''}
+        </div>
+      `).join('');
+    } catch (e) { document.getElementById('fraudAlertsCard').style.display = 'none'; }
+  }
+
   async function initDashboard() {
     await fetchEvents();
-    await fetchRegistrations(); // Fetchevs must run first so updateCharts has the `events` variable
+    await fetchRegistrations();
+    await fetchFraudAlerts();
   }
   initDashboard();
   
@@ -782,6 +821,37 @@
         alert('Server error.');
     }
   }
+
+  function exportAdminCSV() {
+    if(!window.adminRegs || window.adminRegs.length === 0) return alert('No students to export.');
+    let csvContent = "data:text/csv;charset=utf-8,Student Name,Email,Phone,Department,Event,Registration Date\n";
+    window.adminRegs.forEach(r => {
+      let row = [
+        r.name ? r.name.replace(/,/g, "") : "", 
+        r.email ? r.email.replace(/,/g, "") : "", 
+        r.phone || "", 
+        r.department || "", 
+        r.event ? r.event.replace(/,/g, "") : "", 
+        new Date(r.registrationDate).toLocaleDateString()
+      ].join(",");
+      csvContent += row + "\r\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "all_event_registrations.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 </script>
+<script src="chatbot.js"></script>
+    <!-- Advanced Features Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/features/notifications/toast.js"></script>
+    <script src="/features/notifications/smart-notifications.js"></script>
+    <script src="/features/realtime/socket-client.js"></script>
+    <script src="/features/analytics/charts.js"></script>
+    <script src="/features/pwa/install.js"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 require('dotenv').config();
+const http = require('http');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -6,15 +7,24 @@ const path = require('path');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OpenRouter } = require('@openrouter/sdk');
 
 const User = require('./models/User');
 const EventRegistration = require('./models/EventRegistration');
 const Event = require('./models/Event');
 const Issue = require('./models/Issue');
 const Notification = require('./models/Notification');
-
+const sendEmail = require('./mailer');
+const { registerLimiter, blockDisposableEmails } = require('./middleware/validator');
+const { initSocket, emitAttendanceUpdate } = require('./socket');
+const qrService = require('./services/qrService');
+const fraudService = require('./services/fraudService');
+const { createExtendedRouter } = require('./routes/extendedRoutes');
+const advancedRoutes = require('./routes/advanced');
 
 const app = express();
+const server = http.createServer(app);
+const io = initSocket(server);
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI ;
 const JWT_SECRET = process.env.JWT_SECRET ;
@@ -23,6 +33,15 @@ const JWT_SECRET = process.env.JWT_SECRET ;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
+
+// Inject io into request for REST routes if needed
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// Mount advanced routes
+app.use('/api/advanced', advancedRoutes);
 
 // Connect to MongoDB
 mongoose.connect(MONGO_URI, { family: 4 })
@@ -71,6 +90,8 @@ const roleMiddleware = (roles) => {
   };
 };
 
+app.use('/api', createExtendedRouter(authMiddleware, adminMiddleware, roleMiddleware));
+
 // =======================
 // AUTHENTICATION ROUTES
 // =======================
@@ -79,7 +100,7 @@ const roleMiddleware = (roles) => {
 const DEMO_MODE = false;
 
 // Register User
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', registerLimiter, blockDisposableEmails, async (req, res) => {
   try {
     const { role, collegeId, email, password, name, phone, department } = req.body;
 
@@ -93,10 +114,16 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ message: 'College ID is required for students' });
     }
 
-    // 🔍 check existing
+    // 🔍 check existing (email + phone)
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
+    }
+    if (phone) {
+      const existingPhone = await User.findOne({ phone });
+      if (existingPhone) {
+        return res.status(400).json({ message: 'Phone number already registered' });
+      }
     }
 
     // 🔐 hash password
@@ -406,6 +433,15 @@ app.put('/api/issues/:id/status', authMiddleware, adminMiddleware, async (req, r
     const { status } = req.body;
     const issue = await Issue.findByIdAndUpdate(req.params.id, { status }, { new: true });
     if (!issue) return res.status(404).json({ message: 'Issue not found' });
+
+    // Send Notification and Email to Organizer
+    const orgUser = await User.findById(issue.organizerId);
+    if (orgUser) {
+       const notif = new Notification({ userId: orgUser._id, message: `Your issue regarding ${issue.eventName} has been ${status}.`, type: status === 'Approved' ? 'success' : (status === 'Pending' ? 'warning' : 'error') });
+       await notif.save();
+       sendEmail(orgUser.email, `Issue Update: ${status}`, `Hello ${orgUser.name || 'Organizer'},\n\nYour issue for ${issue.eventName} has been updated to: ${status}.\n\nRegards,\nEduEvents Admin`);
+    }
+
     res.json(issue);
   } catch (err) {
     res.status(500).json({ message: 'Server error updating issue' });
@@ -481,7 +517,7 @@ app.get('/api/organizers', authMiddleware, async (req, res) => {
 // =======================
 
 // Register for an event
-app.post('/api/events/register', authMiddleware, async (req, res) => {
+app.post('/api/events/register', authMiddleware, blockDisposableEmails, async (req, res) => {
   try {
     const { name, email, phone, department, event, eventId } = req.body;
     
@@ -543,6 +579,22 @@ app.post('/api/events/register', authMiddleware, async (req, res) => {
       registrationDate: new Date()
     });
     await newRegistration.save();
+
+    // Generate & store QR code for event pass
+    try {
+      const qrDataURL = await qrService.generateQRDataURL(newRegistration._id.toString(), targetEvent._id.toString());
+      newRegistration.qrCode = qrDataURL;
+      await newRegistration.save();
+    } catch (e) { console.error('QR generation:', e); }
+
+    // Record for fraud detection
+    fraudService.recordRegistrationAttempt(req.ip || req.connection?.remoteAddress || 'unknown', email, newRegistration._id.toString());
+
+    // Send Alert and Email
+    const notif = new Notification({ userId: req.user.id, message: `You have successfully registered for ${targetEvent.name}.`, type: 'success' });
+    await notif.save();
+    sendEmail(email, `Registration Confirmed: ${targetEvent.name}`, `Dear ${name},\n\nYou have successfully registered for ${targetEvent.name} happening on ${new Date(targetEvent.date).toLocaleDateString()} at ${targetEvent.place}.\n\nRegards,\nEduEvents Team`);
+
     res.status(201).json({ message: 'Successfully registered for the event' });
   } catch (error) {
     console.error(error);
@@ -582,11 +634,115 @@ app.get('/api/debug/users', async (req, res) => {
   }
 });
 
+// =======================
+// AI CHATBOT API
+// =======================
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { messages } = req.body;
+    
+    // Force reload environment variables if missing
+    if (!process.env.OPENROUTER_API_KEY) {
+      require('dotenv').config();
+    }
+
+    // Ensure API Key is available
+    if (!process.env.OPENROUTER_API_KEY) {
+      return res.json({ reply: "OpenRouter API Key is missing. Please add OPENROUTER_API_KEY to your .env file and restart server." });
+    }
+
+    const systemContent = `You are EduEvents AI Assistant. Help users to understand how to register for events. To register for an event, the user must navigate to the 'Browse Events' page (or 'register-event.html'), explore the list, and click the 'Register' button next to the event they want to attend. Keep answers concise, professional, and directly related to the CEMS web app.`;
+
+    const apiMessages = [{ role: 'system', content: systemContent }, ...messages];
+
+    // Native fetch request to avoid SDK misconfiguration issues
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:3000",
+        "X-Title": "EduEvents"
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3.1-pro-preview",
+        messages: apiMessages
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('OpenRouter API Error:', errText);
+      return res.status(500).json({ reply: `API Error: ${response.status} ${response.statusText}` });
+    }
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content || "I am currently unable to process your request.";
+    res.json({ reply });
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({ reply: `Sorry, I encountered a server error: ${error.message}` });
+  }
+});
+
+// =======================
+// SEED DUMMY DATA API
+// =======================
+app.post('/api/debug/seed', async (req, res) => {
+  try {
+    // 1. Create dummy Admin
+    const salt = await bcrypt.genSalt(10);
+    const pass = await bcrypt.hash('password123', salt);
+    
+    let admin = await User.findOne({ email: 'admin@college.edu' });
+    if (!admin) {
+      admin = new User({ role: 'admin', email: 'admin@college.edu', password: pass, name: 'System Admin' });
+      await admin.save();
+    }
+
+    // 2. Create dummy Organizer
+    let organizer = await User.findOne({ email: 'organizer@college.edu' });
+    if (!organizer) {
+      organizer = new User({ role: 'organizer', email: 'organizer@college.edu', password: pass, name: 'John Events', phone: '555-0101', department: 'Cultural' });
+      await organizer.save();
+    }
+
+    // 3. Create dummy Student
+    let student = await User.findOne({ email: 'student@college.edu' });
+    if (!student) {
+      student = new User({ role: 'student', email: 'student@college.edu', password: pass, collegeId: 'ST101', name: 'Alice Student' });
+      await student.save();
+    }
+
+    // 4. Create dummy Events
+    const ev1 = await Event.findOne({ name: 'Annual Tech Fest 2026' });
+    if (!ev1) {
+      const e1 = new Event({ name: 'Annual Tech Fest 2026', date: new Date(), startTime: '09:00', endTime: '18:00', department: 'CSE', place: 'Main Auditorium', maxSeats: 500, status: 'open', organizerId: organizer._id });
+      await e1.save();
+      const e2 = new Event({ name: 'Cultural Dance Night', date: new Date(Date.now() + 86400000), startTime: '18:00', endTime: '22:00', department: 'Arts', place: 'Open Ground', maxSeats: 1000, status: 'upcoming', organizerId: organizer._id });
+      await e2.save();
+
+      // Issues
+      const is1 = new Issue({ organizerId: organizer._id, organizerName: organizer.name, eventName: 'Annual Tech Fest 2026', description: 'Need more technical equipment for the auditorium.', status: 'Pending' });
+      await is1.save();
+
+      // Registrations
+      const reg1 = new EventRegistration({ user_id: student._id, eventId: e1._id, name: student.name, email: student.email, phone: '555-0202', department: 'CSE', event: e1.name, collegeId: student.collegeId });
+      await reg1.save();
+    }
+
+    res.json({ message: 'Dummy data officially seeded successfully! Login with admin@college.edu, organizer@college.edu, student@college.edu. Password is password123' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Seed failed', error: err.message });
+  }
+});
+
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'landing.html'));
 });
 
 // Start Server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
