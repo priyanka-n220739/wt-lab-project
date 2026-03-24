@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Organizer Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/features/notifications/toast.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* Styling similar to admin dashboard */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f7f8fc; color: #2d3a4a; display: flex; min-height: 100vh; }
+    .sidebar { width: 230px; background: #fff; border-right: 1px solid #e8ecf4; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; }
+    .sidebar-logo { padding: 22px 20px; border-bottom: 1px solid #e8ecf4; }
+    .sidebar-logo h2 { font-size: 1.1rem; font-weight: 700; color: #f59e0b; }
+    .sidebar-logo p { font-size: 0.7rem; color: #9aa3b2; margin-top: 2px; }
+    .sidebar nav { padding: 14px 12px; flex: 1; }
+    .nav-section { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; color: #b0b9c8; padding: 10px 10px 4px; }
+    .nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 0.86rem; color: #6b7a90; text-decoration: none; margin-bottom: 2px; }
+    .nav-link:hover { background: #fffbeb; color: #f59e0b; }
+    .nav-link.active { background: #fef3c7; color: #d97706; font-weight: 600; }
+    .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 14px 16px; border-top: 1px solid #e8ecf4; display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
+    .user-name { font-size: 0.82rem; font-weight: 600; }
+    .user-role { font-size: 0.7rem; color: #9aa3b2; }
+    .main { margin-left: 230px; flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: #fff; border-bottom: 1px solid #e8ecf4; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20; }
+    .topbar-left h1 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-left p  { font-size: 0.75rem; color: #9aa3b2; margin-top: 1px; }
+    .content { padding: 24px 28px; }
+    .card { background: #fff; border: 1px solid #e8ecf4; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .card-head h3 { font-size: 0.92rem; font-weight: 700; }
+    .btn-primary { background: #f59e0b; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-primary:hover { background: #d97706; }
+    .tbl { width: 100%; border-collapse: collapse; font-size: 0.83rem; text-align: left; }
+    .tbl th { padding: 7px 10px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #9aa3b2; border-bottom: 1px solid #e8ecf4; }
+    .tbl td { padding: 11px 10px; border-bottom: 1px solid #f3f4f8; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+    .b-green { background: #ecfdf5; color: #15803d; }
+    .b-yellow { background: #fffbeb; color: #b45309; }
+    
+    /* MODAL */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+    .overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 14px; padding: 28px; width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
+    .modal h2 { font-size: 1rem; margin-bottom: 18px; }
+    .fg { margin-bottom: 14px; }
+    .fg label { display: block; font-size: 0.72rem; font-weight: 600; color: #6b7a90; margin-bottom: 5px; }
+    .fg input, .fg select { width: 100%; padding: 9px 12px; border: 1px solid #e8ecf4; border-radius: 8px; outline: none; }
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .btn-ghost { background: none; border: 1px solid #e8ecf4; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+    .act { background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.76rem; padding: 3px 7px; border-radius: 5px; font-weight: 500; }
+    .act.edit { color: #f59e0b; } .act.edit:hover { background: #fffbeb; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2><a href="landing.html" style="color:#f59e0b;text-decoration:none;">🎓 EduEvents</a></h2>
+    <p>Organizer Portal</p>
+  </div>
+  <nav>
+    <div class="nav-section">Menu</div>
+    <a href="organizer_dashboard.html" class="nav-link active"><span class="icon">🏠</span> Dashboard</a>
+    <a href="#" class="nav-link" onclick="openModal()"><span class="icon">➕</span> Create Event</a>
+    <a href="register-event.html" class="nav-link"><span class="icon">📋</span> Browse Events</a>
+    <div class="nav-section">Attendance</div>
+    <a href="features/attendance/attendance.html" class="nav-link"><span class="icon">📊</span> Attendance</a>
+    <a href="features/qr/scanner.html" class="nav-link"><span class="icon">📷</span> Scan Student QR</a>
+    <a href="#registrationsSection" class="nav-link"><span class="icon">📋</span> View Students</a>
+    <a href="issues.html" class="nav-link"><span class="icon">⚠️</span> Issues / Requests</a>
+    <a href="notifications.html" class="nav-link"><span class="icon">🔔</span> Notifications</a>
+    <a href="contact_chart.html" class="nav-link"><span class="icon">📒</span> Contact Chart</a>
+    <div class="nav-section">Account</div>
+    <a href="#" class="nav-link" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-avatar">OR</div>
+    <div>
+      <div class="user-name">Organizer</div>
+      <div class="user-role">Event Staff</div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Organizer Dashboard</h1>
+      <p>Manage your events and registrations</p>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-primary" onclick="openModal()">+ Create Event</button>
+    </div>
+  </div>
+
+  <div class="content">
+    
+    <div class="card">
+      <div class="card-head">
+        <h3>📅 My Events</h3>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Event Name</th>
+            <th>Date</th>
+            <th>Dept</th>
+            <th>Status</th>
+            <th>Edit Time Window</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="eventsTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="card" id="registrationsSection">
+      <div class="card-head">
+        <h3>👥 Registered Students for My Events</h3>
+        <button class="btn-primary" onclick="exportCSV()" style="font-size:0.75rem; padding: 6px 12px; background:#10b981;">📥 Export CSV</button>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Event</th>
+            <th>Registration Date</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="outsideClose(event)">
+  <div class="modal">
+    <h2 id="modalTitle">➕ Create / Edit Event</h2>
+    <input type="hidden" id="eId">
+    <div class="fg">
+      <label>Event Name</label>
+      <input id="eName" type="text" placeholder="e.g. Tech Symposium 2026"/>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input id="eDate" type="date"/></div>
+      <div class="fg">
+        <label>Department</label>
+        <select id="eDept">
+          <option>CSE</option><option>ECE</option><option>MBA</option>
+          <option>Civil</option><option>Mechanical</option><option>All</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Start Time</label><input id="eStart" type="time"/></div>
+      <div class="fg"><label>End Time</label><input id="eEnd" type="time"/></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Venue</label><input id="eVenue" type="text" placeholder="e.g. Auditorium A"/></div>
+      <div class="fg"><label>Max Seats</label><input id="eSeats" type="number" placeholder="100"/></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveEvent()">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('cems_token');
+  let currentUserId = null;
+  if (!token) { window.location.href = 'organizer_login.html'; }
+  else {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.role !== 'organizer' && payload.role !== 'admin') {
+        window.location.href = 'login.html';
+      }
+      currentUserId = payload.id;
+    } catch (e) { window.location.href = 'organizer_login.html'; }
+  }
+
+  function logout() { localStorage.removeItem('cems_token'); window.location.href = 'landing.html'; }
+
+  function openModal() { document.getElementById('overlay').classList.add('open'); document.getElementById('eId').value=''; document.getElementById('modalTitle').innerText='➕ Create Event'; }
+  function openEditModal(ev) {
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('modalTitle').innerText='✏️ Edit Event';
+    document.getElementById('eId').value = ev._id;
+    document.getElementById('eName').value = ev.name;
+    document.getElementById('eDate').value = ev.date ? ev.date.substring(0,10) : '';
+    document.getElementById('eDept').value = ev.department;
+    document.getElementById('eVenue').value = ev.place;
+    document.getElementById('eStart').value = ev.startTime;
+    document.getElementById('eEnd').value = ev.endTime;
+    document.getElementById('eSeats').value = ev.maxSeats || '';
+  }
+  function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+  function outsideClose(e) { if (e.target.id === 'overlay') closeModal(); }
+
+  let events = [];
+
+  async function fetchData() {
+    // events
+    try {
+      const res = await fetch('/api/events', { headers: { 'Authorization': `Bearer ${token}` } });
+      const allEvents = await res.json();
+      events = allEvents.filter(e => e.organizerId === currentUserId);
+      const tb = document.getElementById('eventsTbody');
+      tb.innerHTML = '';
+      events.forEach(e => {
+        let accessInfo = "Open";
+        if(e.accessStartDate || e.accessEndDate) {
+            accessInfo = `${e.accessStartDate ? new Date(e.accessStartDate).toLocaleDateString() : 'Now'} - ${e.accessEndDate ? new Date(e.accessEndDate).toLocaleDateString() : 'Forever'}`;
+        }
+        tb.innerHTML += `<tr>
+          <td><strong>${e.name}</strong></td>
+          <td>${new Date(e.date).toLocaleDateString()}</td>
+          <td>${e.department}</td>
+          <td><span class="badge b-green">${e.status}</span></td>
+          <td style="font-size: 0.75rem; color: #6b7a90;">${accessInfo}</td>
+          <td><button class="act edit" onclick='openEditModal(${JSON.stringify(e).replace(/'/g, "&#39;")})'>Edit</button></td>
+        </tr>`;
+      });
+    } catch(err) { console.error(err); }
+
+    // regs
+    try {
+      const res = await fetch('/api/events/registrations', { headers: { 'Authorization': `Bearer ${token}` } });
+      const regs = await res.json();
+      // Filter for only this organizer's events
+      const myEventNames = events.map(e => e.name);
+      const myRegs = regs.filter(r => myEventNames.includes(r.event));
+      window.organizerRegs = myRegs; // save globally for CSV export
+
+      const stb = document.getElementById('studentsTbody');
+      stb.innerHTML = '';
+      myRegs.forEach(r => {
+        stb.innerHTML += `<tr>
+          <td><strong>${r.name}</strong></td>
+          <td>${r.email}</td>
+          <td>${r.phone}</td>
+          <td><span class="badge b-yellow">${r.event}</span></td>
+          <td>${new Date(r.registrationDate).toLocaleDateString()}</td>
+        </tr>`;
+      });
+    } catch(err) {}
+  }
+
+  fetchData();
+
+  function exportCSV() {
+    if(!window.organizerRegs || window.organizerRegs.length === 0) return alert('No students to export.');
+    let csvContent = "data:text/csv;charset=utf-8,Student Name,Email,Phone,Event,Registration Date\n";
+    window.organizerRegs.forEach(r => {
+      let row = [r.name, r.email, r.phone, r.event, new Date(r.registrationDate).toLocaleDateString()].join(",");
+      csvContent += row + "\r\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "organizer_event_registrations.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  async function saveEvent() {
+    const id = document.getElementById('eId').value;
+    const data = {
+      name: document.getElementById('eName').value,
+      date: document.getElementById('eDate').value,
+      department: document.getElementById('eDept').value,
+      startTime: document.getElementById('eStart').value,
+      endTime: document.getElementById('eEnd').value,
+      place: document.getElementById('eVenue').value,
+      maxSeats: document.getElementById('eSeats').value
+    };
+    
+    const url = id ? `/api/events/${id}` : `/api/events`;
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      const resData = await res.json();
+      if(!res.ok) { alert(resData.message); return; }
+      closeModal();
+      fetchData();
+    } catch(err) { alert('Error saving event'); }
+  }
+</script>
+<script src="chatbot.js"></script>
+    <!-- Advanced Features Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/features/notifications/toast.js"></script>
+    <script src="/features/notifications/smart-notifications.js"></script>
+    <script src="/features/realtime/socket-client.js"></script>
+    <script src="/features/analytics/charts.js"></script>
+    <script src="/features/pwa/install.js"></script>
+</body>
+</html>

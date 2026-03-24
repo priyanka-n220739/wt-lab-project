@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Event Passes - CEMS</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/features/notifications/toast.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f7f8fc; min-height: 100vh; padding: 24px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin-bottom: 8px; color: #1e293b; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 24px; }
+    .pass-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 24px; margin-bottom: 16px; display: flex; gap: 20px; align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .pass-qr { flex-shrink: 0; padding: 12px; background: #fff; border-radius: 8px; }
+    .pass-qr img { width: 160px; height: 160px; display: block; }
+    .pass-info { flex: 1; min-width: 200px; }
+    .pass-info h3 { font-size: 1.1rem; margin-bottom: 4px; }
+    .pass-info p { font-size: 0.85rem; color: #64748b; margin: 4px 0; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-top: 8px; }
+    .badge-pending { background: #fef3c7; color: #b45309; }
+    .badge-attended { background: #d1fae5; color: #059669; }
+    .btn-cert { margin-top: 12px; padding: 8px 16px; background: #1a56db; color: #fff; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
+    .btn-cert:hover { background: #1649b8; }
+    .btn-cert:disabled { background: #94a3b8; cursor: not-allowed; }
+    .back { display: inline-block; margin-bottom: 16px; color: #1a56db; text-decoration: none; font-size: 0.9rem; }
+    .back:hover { text-decoration: underline; }
+    .empty { text-align: center; padding: 48px 24px; color: #64748b; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a href="../../student_dashboard.html" id="backLink" class="back">← Back to Dashboard</a>
+  <a href="../../register-event.html" class="back" style="margin-left:12px;">Browse Events</a>
+  <h1>🎟️ My QR Passes</h1>
+  <p class="subtitle">Show this QR to Admin/Organizer at the venue for entry. They will scan to allow you in. Download certificate after check-in.</p>
+  <div id="passesContainer"></div>
+</div>
+
+<script src="/features/notifications/toast.js"></script>
+<script src="/features/notifications/smart-notifications.js"></script>
+<script>
+  const token = localStorage.getItem('cems_token');
+  if (!token) { window.location.href = '../../login.html'; }
+
+  let role = 'student';
+  try { role = JSON.parse(atob(token.split('.')[1])).role; } catch (e) {}
+  const backEl = document.getElementById('backLink');
+  if (role === 'admin') backEl.href = '../../admin_dashboard.html';
+  else if (role === 'organizer') backEl.href = '../../organizer_dashboard.html';
+  else backEl.href = '../../student_dashboard.html';
+
+  async function loadPasses() {
+    const container = document.getElementById('passesContainer');
+    try {
+      const res = await fetch('/api/user/registrations', { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.status === 401) { window.location.href = '../../login.html'; return; }
+      const regs = await res.json();
+      if (regs.length === 0) {
+        container.innerHTML = '<div class="empty">No event passes. <a href="../../register-event.html" style="color:#1a56db;">Register for events</a> from Browse Events.</div>';
+        return;
+      }
+      container.innerHTML = regs.map(r => `
+        <div class="pass-card" data-reg-id="${r._id}">
+          <div class="pass-qr">
+            <img id="qr-${r._id}" src="" alt="QR Pass" />
+          </div>
+          <div class="pass-info">
+            <h3>${r.event}</h3>
+            <p>Registered: ${new Date(r.registrationDate).toLocaleDateString()}</p>
+            <span class="badge ${r.scanned ? 'badge-attended' : 'badge-pending'}">${r.scanned ? '✓ Attended' : 'Pending check-in'}</span>
+            ${r.scanned ? `<button class="btn-cert" onclick="downloadCert('${r._id}')">📥 Download Certificate</button>` : '<button class="btn-cert" disabled>Certificate available after check-in</button>'}
+          </div>
+        </div>
+      `).join('');
+
+      for (const r of regs) {
+        let qrSrc = r.qrCode;
+        if (!qrSrc) {
+          const qrRes = await fetch(`/api/user/registrations/${r._id}/qr`, { headers: { 'Authorization': `Bearer ${token}` } });
+          if (qrRes.ok) {
+            const data = await qrRes.json();
+            qrSrc = data.qrCode;
+          }
+        }
+        const img = document.getElementById(`qr-${r._id}`);
+        if (img && qrSrc) img.src = qrSrc;
+      }
+    } catch (err) {
+      container.innerHTML = '<div class="empty">Error loading passes. Try again later.</div>';
+    }
+  }
+
+  async function downloadCert(regId) {
+    try {
+      const res = await fetch(`/api/certificates/${regId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!res.ok) {
+        if (typeof showToast === 'function') showToast('Certificate not available', 'error');
+        return;
+      }
+      const html = await res.text();
+      const w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
+      w.print();
+      if (typeof showToast === 'function') showToast('Use Print to save as PDF', 'info');
+    } catch (e) {
+      if (typeof showToast === 'function') showToast('Failed to load certificate', 'error');
+    }
+  }
+
+  loadPasses();
+</script>
+</body>
+</html>

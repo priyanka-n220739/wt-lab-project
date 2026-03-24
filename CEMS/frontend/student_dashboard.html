@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/features/notifications/toast.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f8fc;
+      color: #2d3a4a;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 230px;
+      background: #fff;
+      border-right: 1px solid #e8ecf4;
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+    }
+    .sidebar-logo {
+      padding: 22px 20px; border-bottom: 1px solid #e8ecf4;
+    }
+    .sidebar-logo h2 { font-size: 1.1rem; font-weight: 700; color: #10b981; }
+    .sidebar-logo p { font-size: 0.7rem; color: #9aa3b2; margin-top: 2px; }
+    .sidebar nav { padding: 14px 12px; flex: 1; }
+    .nav-section {
+      font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #b0b9c8; padding: 10px 10px 4px;
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+      border-radius: 8px; font-size: 0.86rem; color: #6b7a90;
+      text-decoration: none; margin-bottom: 2px; transition: all 0.15s;
+      font-weight: 500;
+    }
+    .nav-link:hover { background: #ecfdf5; color: #10b981; }
+    .nav-link.active { background: #d1fae5; color: #059669; font-weight: 600; }
+    .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 14px 16px; border-top: 1px solid #e8ecf4; display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
+    .user-name { font-size: 0.82rem; font-weight: 600; }
+    .user-role { font-size: 0.7rem; color: #9aa3b2; }
+
+    /* ── MAIN ── */
+    .main { margin-left: 230px; flex: 1; display: flex; flex-direction: column; }
+    
+    /* ── TOPBAR ── */
+    .topbar {
+      background: #fff; border-bottom: 1px solid #e8ecf4; padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .topbar-left h1 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-left p  { font-size: 0.75rem; color: #9aa3b2; margin-top: 1px; }
+
+    /* ── CONTENT ── */
+    .content { padding: 24px 28px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+
+    /* ── CARD ── */
+    .card { background: #fff; border: 1px solid #e8ecf4; border-radius: 12px; padding: 20px; margin-bottom: 20px;}
+    .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .card-head h3 { font-size: 0.92rem; font-weight: 700; }
+    
+    .tbl { width: 100%; border-collapse: collapse; font-size: 0.83rem; text-align: left; }
+    .tbl th { padding: 7px 10px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #9aa3b2; border-bottom: 1px solid #e8ecf4; }
+    .tbl td { padding: 11px 10px; border-bottom: 1px solid #f3f4f8; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+    .b-blue { background: #eef2ff; color: #1a56db; }
+    .b-green { background: #ecfdf5; color: #15803d; }
+    
+    .achievement-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f3f4f8;
+    }
+    .achievement-icon {
+        font-size: 1.5rem;
+    }
+    .achievement-details h4 {
+        font-size: 0.85rem;
+    }
+    .achievement-details p {
+        font-size: 0.75rem;
+        color: #6b7a90;
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2><a href="landing.html" style="color:#10b981;text-decoration:none;">🎓 EduEvents</a></h2>
+    <p>Student Portal</p>
+  </div>
+  <nav>
+    <div class="nav-section">My Portal</div>
+    <a href="#" class="nav-link active"><span class="icon">🏠</span> Dashboard</a>
+    <a href="register-event.html" class="nav-link"><span class="icon">📅</span> Browse Events</a>
+    <a href="features/qr/passes.html" class="nav-link"><span class="icon">🎟️</span> My QR Passes</a>
+    <a href="contact_chart.html" class="nav-link"><span class="icon">📒</span> Contact Organizers</a>
+    <a href="notifications.html" class="nav-link"><span class="icon">🔔</span> Notifications</a>
+    <div class="nav-section">Account</div>
+    <a href="#" class="nav-link"><span class="icon">⚙️</span> Settings</a>
+    <a href="login.html" class="nav-link" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-avatar">ST</div>
+    <div>
+      <div class="user-name" id="studentName">Student</div>
+      <div class="user-role">Enrolled</div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>My Dashboard</h1>
+      <p>Welcome back to your event portal</p>
+    </div>
+  </div>
+
+  <div class="content">
+    
+    <div class="grid-2">
+      <!-- REGISTERED EVENTS -->
+      <div class="card">
+        <div class="card-head">
+          <h3>📌 My Registered Events</h3>
+        </div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Event Name</th>
+              <th>Date Registered</th>
+            </tr>
+          </thead>
+          <tbody id="myEventsTbody">
+            <!-- Dynamic Data -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ACHIEVEMENTS -->
+      <div class="card">
+        <div class="card-head">
+          <h3>🏆 Previous Achievements</h3>
+        </div>
+        <div>
+            <div class="achievement-item">
+                <div class="achievement-icon">🥇</div>
+                <div class="achievement-details">
+                    <h4>Hackathon 2025 - 1st Place</h4>
+                    <p>Awarded for best Innovative Solution in AI category.</p>
+                </div>
+            </div>
+            <div class="achievement-item">
+                <div class="achievement-icon">🎖️</div>
+                <div class="achievement-details">
+                    <h4>Tech Quiz Runner-up</h4>
+                    <p>Placed 2nd out of 500 participants in the Annual Tech Quiz.</p>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIOUS EVENTS -->
+    <div class="card">
+      <div class="card-head">
+        <h3>🕰️ Previous Events Attended</h3>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Event Name</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>AI Symposium 2025</strong></td>
+            <td>Seminar</td>
+            <td>Dec 10, 2025</td>
+            <td><span class="badge b-green">Completed</span></td>
+          </tr>
+          <tr>
+            <td><strong>Coding Bootcamp</strong></td>
+            <td>Workshop</td>
+            <td>Nov 05, 2025</td>
+            <td><span class="badge b-blue">Attended</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('cems_token');
+  if (!token) {
+    window.location.href = 'login.html';
+  } else {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.role !== 'student' && payload.role !== 'admin') {
+        window.location.href = 'login.html';
+      }
+    } catch (e) {
+      window.location.href = 'login.html';
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('cems_token');
+    window.location.href = 'landing.html';
+  }
+
+  async function fetchMyEvents() {
+    try {
+        const res = await fetch('/api/user/registrations', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401 || res.status === 403) {
+            window.location.href = 'login.html';
+            return;
+        }
+        const regs = await res.json();
+        const tb = document.getElementById('myEventsTbody');
+        tb.innerHTML = '';
+        
+        if (regs.length === 0) {
+            tb.innerHTML = `<tr><td colspan="2">You have not registered for any events yet.</td></tr>`;
+            return;
+        }
+        
+        regs.forEach(r => {
+            const time = new Date(r.registrationDate).toLocaleDateString();
+            tb.innerHTML += `<tr>
+                <td><strong>${r.event}</strong></td>
+                <td>${time}</td>
+            </tr>`;
+        });
+    } catch (err) {
+        console.error('Error fetching registrations:', err);
+    }
+  }
+
+  fetchMyEvents();
+</script>
+<script src="chatbot.js"></script>
+    <!-- Advanced Features Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/features/notifications/toast.js"></script>
+    <script src="/features/notifications/smart-notifications.js"></script>
+    <script src="/features/realtime/socket-client.js"></script>
+    <script src="/features/pwa/install.js"></script>
+</body>
+</html>

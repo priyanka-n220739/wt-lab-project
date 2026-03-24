@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner - CEMS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTML5 QRCode library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body class="bg-gray-100 flex flex-col items-center pt-10 min-h-screen">
+
+    <div class="bg-white p-6 rounded-lg shadow-lg text-center w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-2">Scan Student QR</h2>
+        <p class="text-gray-500 text-sm mb-4">Admin / Organizer: Scan student's QR pass to mark attendance</p>
+        <div id="reader" class="mb-4"></div>
+        <div id="result" class="text-lg font-semibold h-12"></div>
+        <button id="backBtn" onclick="goBack()" class="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700">Back to Dashboard</button>
+    </div>
+
+    <!-- Toast UI inclusion -->
+    <link rel="stylesheet" href="/features/notifications/toast.css">
+    <script src="/features/notifications/toast.js"></script>
+    <script>
+      function goBack() {
+        const token = localStorage.getItem('cems_token');
+        if (!token) { window.location.href = '../../landing.html'; return; }
+        try {
+          const role = JSON.parse(atob(token.split('.')[1])).role;
+          if (role === 'admin') window.location.href = '../../admin_dashboard.html';
+          else if (role === 'organizer') window.location.href = '../../organizer_dashboard.html';
+          else window.location.href = '../../student_dashboard.html';
+        } catch (e) { window.location.href = '../../landing.html'; }
+      }
+    </script>
+    <script src="/features/qr/scanner.js"></script>
+</body>
+</html>

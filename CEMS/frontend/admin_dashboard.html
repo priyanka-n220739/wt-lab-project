@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Management Dashboard</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/features/notifications/toast.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f8fc;
+      color: #2d3a4a;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 230px;
+      background: #fff;
+      border-right: 1px solid #e8ecf4;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+    }
+    .sidebar-logo {
+      padding: 22px 20px;
+      border-bottom: 1px solid #e8ecf4;
+    }
+    .sidebar-logo h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1a56db;
+    }
+    .sidebar-logo p {
+      font-size: 0.7rem;
+      color: #9aa3b2;
+      margin-top: 2px;
+    }
+    .sidebar nav {
+      padding: 14px 12px;
+      flex: 1;
+    }
+    .nav-section {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #b0b9c8;
+      padding: 10px 10px 4px;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      color: #6b7a90;
+      text-decoration: none;
+      margin-bottom: 2px;
+      transition: all 0.15s;
+      font-weight: 500;
+    }
+    .nav-link:hover { background: #f0f4ff; color: #1a56db; }
+    .nav-link.active { background: #eef2ff; color: #1a56db; font-weight: 600; }
+    .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid #e8ecf4;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #1a56db;
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .user-name { font-size: 0.82rem; font-weight: 600; }
+    .user-role { font-size: 0.7rem; color: #9aa3b2; }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: 230px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e8ecf4;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .topbar-left h1 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-left p  { font-size: 0.75rem; color: #9aa3b2; margin-top: 1px; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .search {
+      display: flex; align-items: center; gap: 7px;
+      border: 1px solid #e8ecf4;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.82rem;
+      color: #9aa3b2;
+      background: #f7f8fc;
+    }
+    .btn-primary {
+      background: #1a56db;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #1447c0; }
+
+    /* ── CONTENT ── */
+    .content { padding: 24px 28px; }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e8ecf4;
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .stat-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .stat-icon.blue   { background: #eef2ff; }
+    .stat-icon.yellow { background: #fffbeb; }
+    .stat-icon.green  { background: #ecfdf5; }
+    .stat-icon.red    { background: #fff1f2; }
+    .stat-label { font-size: 0.72rem; color: #9aa3b2; font-weight: 500; }
+    .stat-value { font-size: 1.7rem; font-weight: 700; margin: 3px 0 2px; line-height: 1; }
+    .stat-note  { font-size: 0.72rem; }
+    .stat-note.up   { color: #16a34a; }
+    .stat-note.down { color: #dc2626; }
+    .stat-note.neutral { color: #9aa3b2; }
+
+    /* ── TWO COLUMN ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .grid-32 { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 18px; }
+
+    /* ── CARD ── */
+    .card {
+      background: #fff;
+      border: 1px solid #e8ecf4;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .card-head h3 { font-size: 0.92rem; font-weight: 700; }
+    .link-sm { font-size: 0.75rem; color: #1a56db; text-decoration: none; font-weight: 500; }
+    .link-sm:hover { text-decoration: underline; }
+
+    /* ── TABLE ── */
+    .tbl { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    .tbl th {
+      text-align: left;
+      padding: 7px 10px;
+      font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: #9aa3b2;
+      border-bottom: 1px solid #e8ecf4;
+    }
+    .tbl td {
+      padding: 11px 10px;
+      border-bottom: 1px solid #f3f4f8;
+      vertical-align: middle;
+    }
+    .tbl tr:last-child td { border-bottom: none; }
+    .tbl tbody tr:hover td { background: #fafbff; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 0.7rem; font-weight: 600;
+    }
+    .b-blue   { background: #eef2ff; color: #1a56db; }
+    .b-green  { background: #ecfdf5; color: #15803d; }
+    .b-yellow { background: #fffbeb; color: #b45309; }
+    .b-red    { background: #fff1f2; color: #b91c1c; }
+
+    /* ── ACTION BTNS ── */
+    .act { background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.76rem; padding: 3px 7px; border-radius: 5px; font-weight: 500; }
+    .act.edit { color: #1a56db; } .act.edit:hover { background: #eef2ff; }
+    .act.del  { color: #dc2626; } .act.del:hover  { background: #fff1f2; }
+
+    /* ── REGISTRATIONS ── */
+    .reg-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f8;
+    }
+    .reg-row:last-child { border-bottom: none; }
+    .ava {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #1a56db; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+    }
+    .ava.g2 { background: #0891b2; }
+    .ava.g3 { background: #7c3aed; }
+    .ava.g4 { background: #059669; }
+    .ava.g5 { background: #d97706; }
+    .rn { font-size: 0.84rem; font-weight: 600; }
+    .re { font-size: 0.73rem; color: #9aa3b2; }
+    .rt { font-size: 0.7rem; color: #b0b9c8; margin-left: auto; white-space: nowrap; }
+
+    /* ── PERFORMANCE ── */
+    .score-wrap { display: flex; align-items: center; gap: 8px; }
+    .score-bar  { flex: 1; height: 6px; border-radius: 99px; background: #f0f1f5; overflow: hidden; max-width: 100px; }
+    .score-fill { height: 100%; border-radius: 99px; }
+    .sf-green  { background: #22c55e; }
+    .sf-yellow { background: #f59e0b; }
+    .sf-red    { background: #ef4444; }
+
+    /* ── CHART ── */
+    .chart-box { position: relative; height: 200px; }
+
+    /* ── MODAL ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(45,58,74,0.25);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px;
+      width: 440px; max-width: 95vw;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    }
+    .modal h2 { font-size: 1rem; font-weight: 700; margin-bottom: 18px; }
+    .fg { margin-bottom: 14px; }
+    .fg label {
+      display: block; font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: #6b7a90; margin-bottom: 5px;
+    }
+    .fg input, .fg select {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid #e8ecf4; border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 0.84rem; color: #2d3a4a;
+      outline: none; background: #fafbff;
+      transition: border-color 0.15s;
+    }
+    .fg input:focus, .fg select:focus { border-color: #1a56db; background: #fff; }
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .btn-ghost {
+      background: none; border: 1px solid #e8ecf4; color: #6b7a90;
+      padding: 8px 16px; border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 0.82rem; cursor: pointer;
+    }
+    .btn-ghost:hover { border-color: #b0b9c8; color: #2d3a4a; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .grid-32 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2><a href="landing.html" style="color:#1a56db;text-decoration:none;">🎓 EduEvents</a></h2>
+    <p>College Event Management</p>
+  </div>
+  <nav>
+    <div class="nav-section">Main Menu</div>
+    <a href="#" class="nav-link active"><span class="icon">🏠</span> Dashboard</a>
+    <a href="college-events.html" class="nav-link"><span class="icon">📅</span> Events</a>
+    <a href="register-event.html" class="nav-link"><span class="icon">📋</span> Browse Events</a>
+    <a href="#registrationsSection" class="nav-link"><span class="icon">📋</span> Registrations</a>
+    <div class="nav-section">Attendance & QR</div>
+    <a href="features/attendance/attendance.html" class="nav-link"><span class="icon">📊</span> Attendance</a>
+    <a href="features/qr/scanner.html" class="nav-link"><span class="icon">📷</span> Scan Student QR</a>
+    <div class="nav-section">Manage</div>
+    <a href="#" class="nav-link" onclick="openModal(); return false;"><span class="icon">➕</span> Add Event</a>
+    <a href="features/fraud/fraud-alerts.html" class="nav-link"><span class="icon">🛡️</span> Fraud Management</a>
+    <a href="issues.html" class="nav-link"><span class="icon">⚠️</span> View Issues</a>
+    <a href="contact_chart.html" class="nav-link"><span class="icon">📒</span> Organizers</a>
+    <a href="notifications.html" class="nav-link"><span class="icon">🔔</span> Notifications</a>
+    <a href="events.html" class="nav-link"><span class="icon">🏛️</span> Departments</a>
+    <a href="#" class="nav-link"><span class="icon">⚙️</span> Settings</a>
+    <a href="#" class="nav-link" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-avatar">AD</div>
+    <div>
+      <div class="user-name">Admin</div>
+      <div class="user-role">Event Coordinator</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Dashboard</h1>
+      <p>Academic Year 2025 – 2026</p>
+    </div>
+    <div class="topbar-right">
+      <div class="search">🔍 Search...</div>
+      <button class="btn-primary" onclick="openModal()">+ Add Event</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">📅</div>
+        <div>
+          <div class="stat-label">Total Events</div>
+          <div class="stat-value" id="totalEventsStat">0</div>
+          <div class="stat-note neutral">8 added this month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">🎓</div>
+        <div>
+          <div class="stat-label">Registrations</div>
+          <div class="stat-value" id="totalRegsStat">0</div>
+          <div class="stat-note up">↑ 12% vs last month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div>
+          <div class="stat-label">Completed</div>
+          <div class="stat-value">29</div>
+          <div class="stat-note up">69% completion rate</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">⏳</div>
+        <div>
+          <div class="stat-label">Upcoming</div>
+          <div class="stat-value" id="upcomingEventsStat">0</div>
+          <div class="stat-note down">3 events this week</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h3>📈 Registrations per Month</h3></div>
+        <div class="chart-box"><canvas id="lineChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>🏛️ Events by Department</h3></div>
+        <div class="chart-box"><canvas id="doughnutChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- EVENTS TABLE + RECENT REGISTRATIONS -->
+    <div class="grid-32">
+      <div class="card">
+        <div class="card-head">
+          <h3>📅 Upcoming Events</h3>
+          <a href="events.html" class="link-sm">View all →</a>
+        </div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Event Name</th>
+              <th>Date</th>
+              <th>Dept</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>🔔 Recent Registrations (Summary)</h3>
+        </div>
+        <div id="regList"></div>
+      </div>
+    </div>
+
+    <!-- FRAUD ALERTS (Admin only) -->
+    <div class="card" id="fraudAlertsCard" style="display:none;">
+      <div class="card-head">
+        <h3>🛡️ Fraud Alerts</h3>
+        <a href="features/fraud/fraud-alerts.html" class="link-sm">View All →</a>
+      </div>
+      <div id="fraudAlertsContent">Loading...</div>
+    </div>
+
+    <!-- REGISTERED STUDENTS -->
+    <div class="card" id="registrationsSection">
+      <div class="card-head">
+        <h3>👥 Registered Students</h3>
+        <button class="btn-primary" onclick="exportAdminCSV()" style="font-size:0.75rem; padding: 6px 12px; background:#10b981;">📥 Export CSV</button>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Student ID</th>
+            <th>Event</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Registration Date</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD/EDIT EVENT MODAL -->
+<div class="overlay" id="overlay" onclick="outsideClose(event)">
+  <div class="modal" style="width: 500px">
+    <h2 id="modalTitle">➕ Add/Edit Event</h2>
+    <input type="hidden" id="eId">
+    <div class="fg">
+      <label>Event Name</label>
+      <input id="eName" type="text" placeholder="e.g. Tech Symposium 2026"/>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input id="eDate" type="date"/></div>
+      <div class="fg">
+        <label>Department</label>
+        <select id="eDept">
+          <option>CSE</option><option>ECE</option><option>MBA</option>
+          <option>Civil</option><option>Mechanical</option><option>All</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Start Time</label><input id="eStart" type="time" value="09:00"/></div>
+      <div class="fg"><label>End Time</label><input id="eEnd" type="time" value="17:00"/></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Venue</label><input id="eVenue" type="text" placeholder="e.g. Auditorium A"/></div>
+      <div class="fg"><label>Max Seats</label><input id="eSeats" type="number" placeholder="100"/></div>
+    </div>
+    <hr style="margin: 15px 0; border: none; border-top: 1px solid #e8ecf4;"/>
+    <div class="fg">
+      <label>Assign Organizer (User ID) [Optional]</label>
+      <input id="eOrgId" type="text" placeholder="Paste Organizer's ObjectId here"/>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Access Start Date</label><input id="eAccessStart" type="date"/></div>
+      <div class="fg"><label>Access End Date</label><input id="eAccessEnd" type="date"/></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveEvent()">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('cems_token');
+  if (!token) {
+    window.location.href = 'login.html';
+  } else {
+    try {
+      // Decode JWT to check role
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.role !== 'admin') {
+        alert("Access Denied: Admins only.");
+        window.location.href = 'student_dashboard.html';
+      }
+    } catch (e) {
+      localStorage.removeItem('cems_token');
+      window.location.href = 'login.html';
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('cems_token');
+    window.location.href = 'landing.html';
+  }
+
+  let events = [];
+
+  // Fetch Events from API
+  async function fetchEvents() {
+    try {
+        const res = await fetch('/api/events', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401 || res.status === 403) {
+            window.location.href = 'login.html';
+            return;
+        }
+        events = await res.json();
+        renderEvents();
+    } catch (err) {
+        console.error('Error fetching events:', err);
+    }
+  }
+
+  // Render events
+  function renderEvents() {
+    const tb = document.getElementById('eventsTbody');
+    tb.innerHTML = '';
+    events.forEach(e => {
+      const d = new Date(e.date).toLocaleDateString();
+      const bc = e.status === 'open' ? 'b-green' : 'b-blue';
+      tb.innerHTML += `<tr>
+        <td><strong>${e.name}</strong></td>
+        <td>${d}</td>
+        <td>${e.department}</td>
+        <td><span class="badge ${bc}">${e.status}</span></td>
+        <td>
+          <button class="act edit" onclick='openEditModal(${JSON.stringify(e).replace(/'/g, "&#39;")})'>Edit</button>
+          <button class="act del" onclick="delEvent('${e._id}')">Delete</button>
+        </td>
+      </tr>`;
+    });
+  }
+
+  // Delete event
+  async function delEvent(id) {
+    if (confirm('Delete this event?')) {
+        try {
+            await fetch(`/api/events/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            fetchEvents();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+  }
+
+  // Generate dynamic chart data based on API
+  function updateCharts(regs, evs) {
+    // Registrations per Month
+    const monthlyCounts = { 'Jan':0, 'Feb':0, 'Mar':0, 'Apr':0, 'May':0, 'Jun':0, 'Jul':0, 'Aug':0, 'Sep':0, 'Oct':0, 'Nov':0, 'Dec':0 };
+    regs.forEach(r => {
+        const d = new Date(r.registrationDate);
+        const m = d.toLocaleString('en-US', { month: 'short' });
+        if(monthlyCounts[m] !== undefined) monthlyCounts[m]++;
+    });
+
+    // We take last 6 months for chart
+    const currentMonthIndex = new Date().getMonth();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let last6Labels = [];
+    let last6Data = [];
+    for(let i=5; i>=0; i--) {
+        let idx = currentMonthIndex - i;
+        if(idx < 0) idx += 12;
+        last6Labels.push(months[idx]);
+        last6Data.push(monthlyCounts[months[idx]]);
+    }
+
+    if (window.lineChartInst) window.lineChartInst.destroy();
+    window.lineChartInst = new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels: last6Labels,
+        datasets: [{
+          label: 'Registrations',
+          data: last6Data,
+          borderColor: '#1a56db', backgroundColor: 'rgba(26,86,219,0.07)',
+          borderWidth: 2.5, fill: true, tension: 0.4,
+          pointBackgroundColor: '#1a56db', pointRadius: 4,
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    // Events by Department Chart
+    const deptCounts = {};
+    evs.forEach(e => {
+        deptCounts[e.department] = (deptCounts[e.department] || 0) + 1;
+    });
+    
+    const dLabels = Object.keys(deptCounts);
+    const dData = Object.values(deptCounts);
+
+    if (window.doughnutChartInst) window.doughnutChartInst.destroy();
+    window.doughnutChartInst = new Chart(document.getElementById('doughnutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: dLabels.length ? dLabels : ['No Events'],
+        datasets: [{
+          data: dData.length ? dData : [1],
+          backgroundColor: ['#1a56db','#f59e0b','#10b981','#ef4444','#8b5cf6', '#3b82f6'],
+          borderWidth: 2, borderColor: '#fff', hoverOffset: 6,
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+    });
+  }
+
+  // Fetch Registrations
+  let registrationsList = [];
+  let adminRegs = []; // Global variable to store registrations for export
+  async function fetchRegistrations() {
+    try {
+        const res = await fetch('/api/events/registrations', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const regs = await res.json();
+        registrationsList = regs;
+        adminRegs = regs;
+        window.adminRegs = regs; // For CSV export
+
+        if (!Array.isArray(regs)) {
+            console.error('Expected array of registrations, got:', regs);
+            return;
+        }
+
+        const rl = document.getElementById('regList');
+        const stb = document.getElementById('studentsTbody');
+        rl.innerHTML = '';
+        stb.innerHTML = '';
+        
+        if (regs.length === 0) {
+            rl.innerHTML = '<p style="color:#9aa3b2;font-size:0.8rem;">No registrations yet.</p>';
+            stb.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No students have registered for any events yet.</td></tr>';
+            return;
+        }
+
+        regs.forEach((r, i) => {
+            const clOptions = ['g2', 'g3', 'g4', 'g5', ''];
+            const name = r.name || 'Anonymous';
+            const init = name.substring(0, 2).toUpperCase();
+            const cl = clOptions[i % clOptions.length];
+            const time = r.registrationDate ? new Date(r.registrationDate).toLocaleDateString() : 'N/A';
+            
+            rl.innerHTML += `<div class="reg-row">
+            <div class="ava ${cl}">${init}</div>
+            <div>
+              <div class="rn">${name}</div>
+              <div class="re">${r.event || 'Unknown Event'} - <span style="color:#10b981">${r.department || 'N/A'}</span></div>
+            </div>
+            <div class="rt">${time}</div>
+            </div>`;
+            
+            // Populate full students table
+            stb.innerHTML += `<tr>
+              <td><strong>${name}</strong></td>
+              <td>${r.collegeId || 'N/A'}</td>
+              <td><span class="badge b-blue">${r.event || 'Unknown'}</span></td>
+              <td>${r.email || 'N/A'}</td>
+              <td>${r.phone || 'N/A'}</td>
+              <td>${time}</td>
+            </tr>`;
+        });
+
+        // Update Stats
+        document.getElementById('totalEventsStat').innerText = (events && events.length) || 0;
+        document.getElementById('totalRegsStat').innerText = (regs && regs.length) || 0;
+        const upcomingCount = (events && events.filter(e => e.status !== 'closed').length) || 0;
+        document.getElementById('upcomingEventsStat').innerText = upcomingCount;
+        
+        // Trigger chart updates utilizing fetched data
+        updateCharts(registrationsList, events);
+
+    } catch (err) {
+        console.error('Error fetching registrations:', err);
+    }
+}
+
+  async function fetchFraudAlerts() {
+    try {
+      const res = await fetch('/api/fraud/alerts', { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.status !== 200) return;
+      const alerts = await res.json();
+      const card = document.getElementById('fraudAlertsCard');
+      const content = document.getElementById('fraudAlertsContent');
+      if (alerts.length === 0) { card.style.display = 'none'; return; }
+      card.style.display = 'block';
+      content.innerHTML = alerts.map(a => `
+        <div style="padding:10px;border:1px solid #fef3c7;border-radius:8px;margin-bottom:8px;background:#fffbeb;">
+          <strong>⚠️ Suspicious IP:</strong> ${a.ip} - ${a.count} registrations in 1hr
+          ${a.emails && a.emails.length ? `<br><small>Emails: ${a.emails.slice(0,3).join(', ')}${a.emails.length>3?'...':''}</small>` : ''}
+        </div>
+      `).join('');
+    } catch (e) { document.getElementById('fraudAlertsCard').style.display = 'none'; }
+  }
+
+  async function initDashboard() {
+    await fetchEvents();
+    await fetchRegistrations();
+    await fetchFraudAlerts();
+  }
+  initDashboard();
+  
+  // Real-time updates: refresh dashboard data every 10 seconds
+  setInterval(initDashboard, 10000);
+
+  function openModal()    { 
+    document.getElementById('overlay').classList.add('open'); 
+    document.getElementById('modalTitle').innerText = '➕ Add New Event';
+    document.getElementById('eId').value = '';
+    document.getElementById('eName').value = '';
+    document.getElementById('eDate').value = '';
+    document.getElementById('eStart').value = '09:00';
+    document.getElementById('eEnd').value = '17:00';
+    document.getElementById('eVenue').value = '';
+    document.getElementById('eSeats').value = '';
+    document.getElementById('eOrgId').value = '';
+    document.getElementById('eAccessStart').value = '';
+    document.getElementById('eAccessEnd').value = '';
+  }
+  function openEditModal(ev) {
+    document.getElementById('overlay').classList.add('open'); 
+    document.getElementById('modalTitle').innerText = '✏️ Edit Event';
+    document.getElementById('eId').value = ev._id;
+    document.getElementById('eName').value = ev.name || '';
+    document.getElementById('eDate').value = ev.date ? ev.date.substring(0,10) : '';
+    document.getElementById('eStart').value = ev.startTime || '09:00';
+    document.getElementById('eEnd').value = ev.endTime || '17:00';
+    document.getElementById('eDept').value = ev.department || 'CSE';
+    document.getElementById('eVenue').value = ev.place || '';
+    document.getElementById('eSeats').value = ev.maxSeats || '';
+    document.getElementById('eOrgId').value = ev.organizerId || '';
+    document.getElementById('eAccessStart').value = ev.accessStartDate ? ev.accessStartDate.substring(0,10) : '';
+    document.getElementById('eAccessEnd').value = ev.accessEndDate ? ev.accessEndDate.substring(0,10) : '';
+  }
+  function closeModal()   { document.getElementById('overlay').classList.remove('open'); }
+  function outsideClose(e){ if (e.target.id === 'overlay') closeModal(); }
+
+  async function saveEvent() {
+    const id = document.getElementById('eId').value;
+    const name = document.getElementById('eName').value.trim();
+    const date = document.getElementById('eDate').value;
+    const department = document.getElementById('eDept').value;
+    const startTime = document.getElementById('eStart').value;
+    const endTime = document.getElementById('eEnd').value;
+    const place = document.getElementById('eVenue').value;
+    const maxSeats = document.getElementById('eSeats').value;
+    const organizerId = document.getElementById('eOrgId').value.trim() || undefined;
+    const accessStartDate = document.getElementById('eAccessStart').value || undefined;
+    const accessEndDate = document.getElementById('eAccessEnd').value || undefined;
+
+    if (!name || !date || !startTime || !endTime || !place) { 
+      alert('Please enter event name, date, time, and venue.'); return; 
+    }
+
+    const payload = { name, date, department, startTime, endTime, place, maxSeats, organizerId, accessStartDate, accessEndDate };
+    const url = id ? `/api/events/${id}` : `/api/events`;
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if(!res.ok) { alert(data.message); return; }
+        fetchEvents();
+        closeModal();
+    } catch (err) {
+        console.error('Error saving event:', err);
+        alert('Server error.');
+    }
+  }
+
+  function exportAdminCSV() {
+    if(!window.adminRegs || window.adminRegs.length === 0) return alert('No students to export.');
+    let csvContent = "data:text/csv;charset=utf-8,Student Name,Email,Phone,Department,Event,Registration Date\n";
+    window.adminRegs.forEach(r => {
+      let row = [
+        r.name ? r.name.replace(/,/g, "") : "", 
+        r.email ? r.email.replace(/,/g, "") : "", 
+        r.phone || "", 
+        r.department || "", 
+        r.event ? r.event.replace(/,/g, "") : "", 
+        new Date(r.registrationDate).toLocaleDateString()
+      ].join(",");
+      csvContent += row + "\r\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "all_event_registrations.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+<script src="chatbot.js"></script>
+    <!-- Advanced Features Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/features/notifications/toast.js"></script>
+    <script src="/features/notifications/smart-notifications.js"></script>
+    <script src="/features/realtime/socket-client.js"></script>
+    <script src="/features/analytics/charts.js"></script>
+    <script src="/features/pwa/install.js"></script>
+</body>
+</html>

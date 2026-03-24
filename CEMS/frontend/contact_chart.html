@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Contact Chart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif;}
+    body { background: #f7f8fc; color: #2d3a4a; padding: 40px; }
+    .card { background: #fff; border: 1px solid #e8ecf4; border-radius: 12px; padding: 20px; max-width: 1000px; margin: 0 auto 20px; }
+    h1, h2 { margin-bottom: 20px; }
+    .tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left; }
+    .tbl th { padding: 10px; font-weight: 600; text-transform: uppercase; color: #9aa3b2; border-bottom: 1px solid #e8ecf4; }
+    .tbl td { padding: 12px 10px; border-bottom: 1px solid #f3f4f8; }
+    .nav { margin-bottom: 20px; max-width: 1000px; margin: 0 auto 20px; }
+    .nav a { color: #1a56db; text-decoration: none; font-weight: bold; cursor: pointer;}
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a id="backLink">⬅ Back to Dashboard</a>
+    <a href="landing.html" style="margin-left:16px;">Home</a>
+    <a href="register-event.html" style="margin-left:16px;">Browse Events</a>
+  </div>
+  <div class="card">
+    <h2>📒 Organizer Contact Chart</h2>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Events Managing</th>
+          <th>Email</th>
+          <th>Phone</th>
+        </tr>
+      </thead>
+      <tbody id="orgList">
+        <tr><td colspan="5">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('cems_token');
+    if(!token) { window.location.href='login.html'; }
+
+    let role = 'student';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      role = payload.role;
+    } catch(e) {}
+
+    const link = document.getElementById('backLink');
+    if(role === 'admin') link.href = 'admin_dashboard.html';
+    else if(role === 'organizer') link.href = 'organizer_dashboard.html';
+    else link.href = 'student_dashboard.html';
+
+    async function fetchContacts() {
+      // Fetch organizers
+      const res = await fetch('/api/organizers', { headers: { 'Authorization': `Bearer ${token}` } });
+      const orgs = await res.json();
+      
+      // Fetch events to know who is managing what
+      const resEv = await fetch('/api/events', { headers: { 'Authorization': `Bearer ${token}` } });
+      const events = await resEv.json();
+
+      const list = document.getElementById('orgList');
+      list.innerHTML = '';
+      if(orgs.length === 0) list.innerHTML = '<tr><td colspan="5">No organizers found.</td></tr>';
+      
+      orgs.forEach(o => {
+        // Find events managed by this organizer
+        const managed = events.filter(e => e.organizerId === o._id).map(e => e.name).join(', ') || 'None';
+        
+        list.innerHTML += `
+          <tr>
+            <td><strong>${o.name || 'N/A'}</strong></td>
+            <td>${o.department || 'N/A'}</td>
+            <td>${managed}</td>
+            <td>${o.email}</td>
+            <td>${o.phone || 'N/A'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    fetchContacts();
+  </script>
+</body>
+</html>
