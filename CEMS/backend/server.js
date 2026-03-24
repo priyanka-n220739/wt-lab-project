@@ -31,10 +31,6 @@ mongoose.connect(MONGO_URI, { family: 4 })
   .catch(err => {
     console.error('Database Connection Error!');
     console.error('Reason:', err.message);
-    console.log('--- ACTION REQUIRED ---');
-    console.log('1. If on college Wi-Fi, try Mobile Hotspot (Data only).');
-    console.log('2. Check if your current IP is whitelisted in Atlas.');
-    console.log('-----------------------');
   });
 
 // =======================
@@ -60,10 +56,9 @@ const adminMiddleware = (req, res, next) => {
   next();
 };
 
-// =======================
+ 
 // AUTHENTICATION ROUTES
-// =======================
-
+ 
 // Demo Mode Toggle (Set to true to skip DB check)
 const DEMO_MODE = false;
 
@@ -72,27 +67,27 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { role, collegeId, email, password } = req.body;
 
-    // ✅ basic validation
+    //  basic validation
     if (!email || !password || !role) {
       return res.status(400).json({ message: 'Email, password, and role are required' });
     }
 
-    // ✅ only student needs collegeId
+    //  only student needs collegeId
     if (role === 'student' && !collegeId) {
       return res.status(400).json({ message: 'College ID is required for students' });
     }
 
-    // 🔍 check existing
+    //  check existing
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // 🔐 hash password
+    // hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // ✅ create user
+    // create user
     const newUser = new User({
       role,
       email,
@@ -115,29 +110,29 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password, loginType } = req.body;
 
-    // 🔴 Validation
+    //  Validation
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // 🔍 Find user
+    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // 🔐 Check role (optional but safe)
+    //  Check role (optional but safe)
     if (loginType && user.role !== loginType) {
       return res.status(403).json({ message: `Access denied: You are not an ${loginType}` });
     }
 
-    // 🔐 Compare password
+    //  Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // 🔐 Generate JWT
+    // Generate JWT
     const token = jwt.sign(
       {
         id: user._id,
@@ -160,10 +155,9 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// =======================
+ 
 // EVENT APIs
-// =======================
-
+ 
 // Helper to check for event conflicts (same time and place)
 const checkConflict = async (date, startTime, endTime, place, excludeId = null) => {
   const eventDate = new Date(date);
