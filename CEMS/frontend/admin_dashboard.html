@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Event Management Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/home.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,6 +16,8 @@
       color: #2d3a4a;
       display: flex;
       min-height: 100vh;
+      overflow-x: hidden;
+      width: 100%;
     }
 
     /* ── SIDEBAR ── */
@@ -34,7 +37,7 @@
     .sidebar-logo h2 {
       font-size: 1.1rem;
       font-weight: 700;
-      color: #1a56db;
+      color: #808000;
     }
     .sidebar-logo p {
       font-size: 0.7rem;
@@ -66,8 +69,8 @@
       transition: all 0.15s;
       font-weight: 500;
     }
-    .nav-link:hover { background: #f0f4ff; color: #1a56db; }
-    .nav-link.active { background: #eef2ff; color: #1a56db; font-weight: 600; }
+    .nav-link:hover { background: #f5f5dc; color: #808000; }
+    .nav-link.active { background: #fdfde0; color: #556b2f; font-weight: 600; }
     .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
     .sidebar-footer {
       padding: 14px 16px;
@@ -79,7 +82,7 @@
     .user-avatar {
       width: 34px; height: 34px;
       border-radius: 50%;
-      background: #1a56db;
+      background: #808000;
       color: white;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.78rem; font-weight: 700;
@@ -93,19 +96,23 @@
       flex: 1;
       display: flex;
       flex-direction: column;
+      width: calc(100% - 230px);
+      min-width: 0;
+      overflow-x: hidden;
     }
 
     /* ── TOPBAR ── */
     .topbar {
-      background: #fff;
-      border-bottom: 1px solid #e8ecf4;
+      background: #808000;
+      color: #fff;
+      border-bottom: 1px solid #556b2f;
       padding: 14px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky; top: 0; z-index: 20;
     }
-    .topbar-left h1 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-left h1 { font-size: 1.1rem; font-weight: 700; color: #fff; }
     .topbar-left p  { font-size: 0.75rem; color: #9aa3b2; margin-top: 1px; }
     .topbar-right { display: flex; align-items: center; gap: 10px; }
     .search {
@@ -118,7 +125,7 @@
       background: #f7f8fc;
     }
     .btn-primary {
-      background: #1a56db;
+      background: #808000;
       color: #fff;
       border: none;
       padding: 8px 16px;
@@ -129,18 +136,20 @@
       cursor: pointer;
       transition: background 0.15s;
     }
-    .btn-primary:hover { background: #1447c0; }
+    .btn-primary:hover { background: #556b2f; }
 
     /* ── CONTENT ── */
-    .content { padding: 24px 28px; }
+    .content { 
+      padding: 24px 28px; 
+      flex: 1; 
+      overflow-y: auto; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: stretch; 
+      gap: 25px;
+    }
 
     /* ── STAT CARDS ── */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 22px;
-    }
     .stat-card {
       background: #fff;
       border: 1px solid #e8ecf4;
@@ -149,6 +158,7 @@
       display: flex;
       align-items: flex-start;
       gap: 14px;
+      margin-bottom: 16px;
     }
     .stat-icon {
       width: 44px; height: 44px;
@@ -157,9 +167,9 @@
       font-size: 1.2rem;
       flex-shrink: 0;
     }
-    .stat-icon.blue   { background: #eef2ff; }
+    .stat-icon.blue   { background: #f5f5dc; }
     .stat-icon.yellow { background: #fffbeb; }
-    .stat-icon.green  { background: #ecfdf5; }
+    .stat-icon.green  { background: #f5f5dc; }
     .stat-icon.red    { background: #fff1f2; }
     .stat-label { font-size: 0.72rem; color: #9aa3b2; font-weight: 500; }
     .stat-value { font-size: 1.7rem; font-weight: 700; margin: 3px 0 2px; line-height: 1; }
@@ -168,9 +178,8 @@
     .stat-note.down { color: #dc2626; }
     .stat-note.neutral { color: #9aa3b2; }
 
-    /* ── TWO COLUMN ── */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-    .grid-32 { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 18px; }
+    /* ── SPACING ── */
+    .card { margin-bottom: 22px; }
 
     /* ── CARD ── */
     .card {
@@ -178,13 +187,15 @@
       border: 1px solid #e8ecf4;
       border-radius: 12px;
       padding: 20px;
+      width: 100%;
+      display: block;
     }
     .card-head {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 16px;
     }
     .card-head h3 { font-size: 0.92rem; font-weight: 700; }
-    .link-sm { font-size: 0.75rem; color: #1a56db; text-decoration: none; font-weight: 500; }
+    .link-sm { font-size: 0.75rem; color: #808000; text-decoration: none; font-weight: 500; }
     .link-sm:hover { text-decoration: underline; }
 
     /* ── TABLE ── */
@@ -211,14 +222,14 @@
       padding: 3px 9px; border-radius: 20px;
       font-size: 0.7rem; font-weight: 600;
     }
-    .b-blue   { background: #eef2ff; color: #1a56db; }
-    .b-green  { background: #ecfdf5; color: #15803d; }
+    .b-blue   { background: #f5f5dc; color: #808000; }
+    .b-green  { background: #f5f5dc; color: #15803d; }
     .b-yellow { background: #fffbeb; color: #b45309; }
     .b-red    { background: #fff1f2; color: #b91c1c; }
 
     /* ── ACTION BTNS ── */
     .act { background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.76rem; padding: 3px 7px; border-radius: 5px; font-weight: 500; }
-    .act.edit { color: #1a56db; } .act.edit:hover { background: #eef2ff; }
+    .act.edit { color: #808000; } .act.edit:hover { background: #f5f5dc; }
     .act.del  { color: #dc2626; } .act.del:hover  { background: #fff1f2; }
 
     /* ── REGISTRATIONS ── */
@@ -230,13 +241,13 @@
     .reg-row:last-child { border-bottom: none; }
     .ava {
       width: 34px; height: 34px; border-radius: 50%;
-      background: #1a56db; color: #fff;
+      background: #808000; color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
     }
     .ava.g2 { background: #0891b2; }
     .ava.g3 { background: #7c3aed; }
-    .ava.g4 { background: #059669; }
+    .ava.g4 { background: #556b2f; }
     .ava.g5 { background: #d97706; }
     .rn { font-size: 0.84rem; font-weight: 600; }
     .re { font-size: 0.73rem; color: #9aa3b2; }
@@ -251,7 +262,79 @@
     .sf-red    { background: #ef4444; }
 
     /* ── CHART ── */
-    .chart-box { position: relative; height: 200px; }
+    .chart-box { position: relative; height: 350px; }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: #808000;
+      color: #fafafa;
+      padding: 50px 28px 20px;
+      margin-top: 40px;
+      font-size: 0.9rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer-section h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #fff;
+      position: relative;
+    }
+    .footer-section h4::after {
+      content: '';
+      position: absolute;
+      left: 0; bottom: -8px;
+      width: 30px; height: 2px;
+      background: #808000;
+    }
+    .footer-section p {
+      line-height: 1.6;
+      color: #d1d5db;
+      margin-bottom: 15px;
+    }
+    .footer-links { list-style: none; }
+    .footer-links li { margin-bottom: 12px; }
+    .footer-links a {
+      color: #d1d5db;
+      text-decoration: none;
+      transition: color 0.2s, padding-left 0.2s;
+    }
+    .footer-links a:hover {
+      color: #fff;
+      padding-left: 5px;
+    }
+    .social-icons {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .social-icon {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .social-icon:hover {
+      background: #808000;
+      transform: translateY(-3px);
+    }
+    .footer-bottom {
+      text-align: center;
+      padding-top: 30px;
+      margin-top: 50px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.8rem;
+      color: #9aa3b2;
+    }
 
     /* ── MODAL ── */
     .overlay {
@@ -281,7 +364,7 @@
       outline: none; background: #fafbff;
       transition: border-color 0.15s;
     }
-    .fg input:focus, .fg select:focus { border-color: #1a56db; background: #fff; }
+    .fg input:focus, .fg select:focus { border-color: #808000; background: #fff; }
     .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
     .btn-ghost {
@@ -293,12 +376,12 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1024px) {
-      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .stats-grid { grid-template-columns: 1fr; }
       .grid-32 { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
       .sidebar { display: none; }
-      .main { margin-left: 0; }
+      .main { margin-left: 0; width: 100%; }
       .grid-2 { grid-template-columns: 1fr; }
     }
   </style>
@@ -313,14 +396,13 @@
   </div>
   <nav>
     <div class="nav-section">Main Menu</div>
-    <a href="#" class="nav-link active"><span class="icon">🏠</span> Dashboard</a>
+    <a href="home.html" class="nav-link"><span class="icon">🏠</span> Home</a>
+    <a href="#" class="nav-link active"><span class="icon">📊</span> Dashboard</a>
     <a href="college-events.html" class="nav-link"><span class="icon">📅</span> Events</a>
     <a href="#registrationsSection" class="nav-link"><span class="icon">📋</span> Registrations</a>
-    <div class="nav-section">Manage</div>
-    <a href="#" class="nav-link" onclick="openModal(); return false;"><span class="icon">➕</span> Add Event</a>
     <a href="events.html" class="nav-link"><span class="icon">🏛️</span> Departments</a>
     <a href="#" class="nav-link"><span class="icon">📊</span> Reports</a>
-    <a href="#" class="nav-link"><span class="icon">⚙️</span> Settings</a>
+    <a href="settings.html" class="nav-link"><span class="icon">⚙️</span> Settings</a>
     <a href="#" class="nav-link" onclick="logout()"><span class="icon">🚪</span> Logout</a>
   </nav>
   <div class="sidebar-footer">
@@ -343,68 +425,78 @@
     </div>
     <div class="topbar-right">
       <div class="search">🔍 Search...</div>
-      <button class="btn-primary" onclick="openModal()">+ Add Event</button>
     </div>
   </div>
 
   <!-- CONTENT -->
   <div class="content">
 
-    <!-- STAT CARDS -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon blue">📅</div>
-        <div>
-          <div class="stat-label">Total Events</div>
-          <div class="stat-value" id="totalEventsStat">0</div>
-          <div class="stat-note neutral">8 added this month</div>
+    <!-- ROW 1: QUICK STATS (Vertical) -->
+    <div class="card" style="margin-bottom: 22px;">
+      <div class="card-head"><h3>🚀 Dashboard Overview</h3></div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="stat-card" style="margin: 0; border: 1px solid #f3f4f6; background: #fafafa; flex: 1;">
+          <div class="stat-icon blue">📅</div>
+          <div>
+            <div class="stat-label">Total Events</div>
+            <div class="stat-value" id="totalEventsStat">0</div>
+          </div>
         </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon yellow">🎓</div>
-        <div>
-          <div class="stat-label">Registrations</div>
-          <div class="stat-value" id="totalRegsStat">0</div>
-          <div class="stat-note up">↑ 12% vs last month</div>
+        <div class="stat-card" style="margin: 0; border: 1px solid #f3f4f6; background: #fafafa; flex: 1;">
+          <div class="stat-icon yellow">🎓</div>
+          <div>
+            <div class="stat-label">Registrations</div>
+            <div class="stat-value" id="totalRegsStat">0</div>
+          </div>
         </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon green">✅</div>
-        <div>
-          <div class="stat-label">Completed</div>
-          <div class="stat-value">29</div>
-          <div class="stat-note up">69% completion rate</div>
+        <div class="stat-card" style="margin: 0; border: 1px solid #f3f4f6; background: #fafafa; flex: 1;">
+          <div class="stat-icon green">✅</div>
+          <div>
+            <div class="stat-label">Completed</div>
+            <div class="stat-value">29</div>
+          </div>
         </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon red">⏳</div>
-        <div>
-          <div class="stat-label">Upcoming</div>
-          <div class="stat-value" id="upcomingEventsStat">0</div>
-          <div class="stat-note down">3 events this week</div>
+        <div class="stat-card" style="margin: 0; border: 1px solid #f3f4f6; background: #fafafa; flex: 1;">
+          <div class="stat-icon red">⏳</div>
+          <div>
+            <div class="stat-label">Upcoming</div>
+            <div class="stat-value" id="upcomingEventsStat">0</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- CHARTS -->
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head"><h3>📈 Registrations per Month</h3></div>
-        <div class="chart-box"><canvas id="lineChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-head"><h3>🏛️ Events by Department</h3></div>
-        <div class="chart-box"><canvas id="doughnutChart"></canvas></div>
-      </div>
+    <!-- ROW 2: DEPARTMENTAL EVENT DISTRIBUTION (Requested 1st) -->
+    <div class="card" style="margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+      <div class="card-head"><h3>🏛️ Event Distribution</h3></div>
+      <div class="chart-box"><canvas id="doughnutChart"></canvas></div>
     </div>
 
-    <!-- EVENTS TABLE + RECENT REGISTRATIONS -->
-    <div class="grid-32">
-      <div class="card">
-        <div class="card-head">
-          <h3>📅 Upcoming Events</h3>
-          <a href="events.html" class="link-sm">View all →</a>
-        </div>
+    <!-- ROW 3: PERFORMANCE ANALYTICS (Requested 2nd) -->
+    <div class="card" style="margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+      <div class="card-head"><h3>📊 Performance Analysis by Department</h3></div>
+      <div class="chart-box"><canvas id="barChart"></canvas></div>
+    </div>
+
+    <!-- ROW 4: EVENT STATUS OVERVIEW (Requested 3rd) -->
+    <div class="card" style="margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+      <div class="card-head"><h3>🎯 Event Status Overview </h3></div>
+      <div class="chart-box"><canvas id="pieChart"></canvas></div>
+    </div>
+
+    <!-- ROW 5: MONTHLY TREND (Moved below requested items) -->
+    <div class="card" style="margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+      <div class="card-head"><h3>📈 Monthly Registration Trend</h3></div>
+      <div class="chart-box"><canvas id="lineChart"></canvas></div>
+    </div>
+
+    <!-- ROW 6: EVENTS TABLE (Requested 4th) -->
+    <div class="card" style="margin-bottom: 22px;">
+      <div class="card-head">
+        <h3>📅 Upcoming Event Management</h3>
+        <a href="events.html" class="link-sm">View all →</a>
+      </div>
+      <div style="overflow-x: auto;">
         <table class="tbl">
           <thead>
             <tr>
@@ -418,42 +510,59 @@
           <tbody id="eventsTbody"></tbody>
         </table>
       </div>
-
-      <div class="card">
-        <div class="card-head">
-          <h3>🔔 Recent Registrations (Summary)</h3>
-        </div>
-        <div id="regList"></div>
-      </div>
     </div>
 
-    <!-- REGISTERED STUDENTS -->
-    <div class="card" id="registrationsSection">
+    <!-- ROW 7: REGISTERED STUDENTS (Requested 5th) -->
+    <div class="card" id="registrationsSection" style="margin-bottom: 40px;">
       <div class="card-head">
-        <h3>👥 Registered Students</h3>
+        <h3>👥 Registered Students Details</h3>
       </div>
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Student Name</th>
-            <th>Student ID</th>
-            <th>Event</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Registration Date</th>
-          </tr>
-        </thead>
-        <tbody id="studentsTbody"></tbody>
-      </table>
+      <div style="overflow-x: auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Student ID</th>
+              <th>Event</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Registration Date</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTbody"></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
+
+  <footer class="footer">
+    <div class="footer-container">
+        <div class="footer-links">
+            <a href="home.html">Home</a>
+            <a href="college-events.html">Events</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <span>📧 support@eduevents.edu</span>
+            <span>📞 +91 (800) 123-4567</span>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 EduEvents Management System. All Rights Reserved.
+        </div>
+    </div>
+  </footer>
 </div>
 
 <!-- ADD EVENT MODAL -->
 <div class="overlay" id="overlay" onclick="outsideClose(event)">
   <div class="modal">
     <h2>➕ Add New Event</h2>
+    
+    <div id="modalError" style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; display: none; border: 1px solid #fecaca;">
+      <!-- Error messages show here -->
+    </div>
+
     <div class="fg">
       <label>Event Name</label>
       <input id="eName" type="text" placeholder="e.g. Tech Symposium 2026"/>
@@ -468,8 +577,14 @@
         </select>
       </div>
     </div>
+    
     <div class="frow">
-      <div class="fg"><label>Venue</label><input id="eVenue" type="text" placeholder="e.g. Auditorium A"/></div>
+      <div class="fg"><label>Start Time</label><input id="eStartTime" type="time"/></div>
+      <div class="fg"><label>End Time</label><input id="eEndTime" type="time"/></div>
+    </div>
+
+    <div class="frow">
+      <div class="fg"><label>Place / Venue</label><input id="ePlace" type="text" placeholder="e.g. Auditorium A"/></div>
       <div class="fg"><label>Max Seats</label><input id="eSeats" type="number" placeholder="100"/></div>
     </div>
     <div class="modal-btns">
@@ -585,9 +700,10 @@
         datasets: [{
           label: 'Registrations',
           data: last6Data,
-          borderColor: '#1a56db', backgroundColor: 'rgba(26,86,219,0.07)',
-          borderWidth: 2.5, fill: true, tension: 0.4,
-          pointBackgroundColor: '#1a56db', pointRadius: 4,
+          borderColor: '#808000',
+        backgroundColor: 'rgba(128,128,0,0.07)',
+        borderWidth: 2.5, fill: true, tension: 0.4,
+        pointBackgroundColor: '#808000', pointRadius: 4,
         }]
       },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
@@ -609,11 +725,47 @@
         labels: dLabels.length ? dLabels : ['No Events'],
         datasets: [{
           data: dData.length ? dData : [1],
-          backgroundColor: ['#1a56db','#f59e0b','#10b981','#ef4444','#8b5cf6', '#3b82f6'],
+          backgroundColor: ['#808000','#f59e0b','#556b2f','#ef4444','#8b5cf6', '#3b82f6'],
           borderWidth: 2, borderColor: '#fff', hoverOffset: 6,
         }]
       },
       options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+    });
+
+    // NEW BAR CHART: Registrations per Department
+    const regDeptCounts = {};
+    regs.forEach(r => { regDeptCounts[r.department] = (regDeptCounts[r.department] || 0) + 1; });
+    const bLabels = Object.keys(regDeptCounts);
+    const bData = Object.values(regDeptCounts);
+
+    if (window.barChartInst) window.barChartInst.destroy();
+    window.barChartInst = new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: bLabels.length ? bLabels : ['No Data'],
+        datasets: [{
+          label: 'Student Registrations',
+          data: bData.length ? bData : [0],
+          backgroundColor: '#808000',
+          borderRadius: 6
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+    const openCount = evs.filter(e => e.status === 'open').length;
+    const closedCount = evs.length - openCount;
+
+    if (window.pieChartInst) window.pieChartInst.destroy();
+    window.pieChartInst = new Chart(document.getElementById('pieChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Open Events', 'Closed/Completed'],
+        datasets: [{
+          data: [openCount, closedCount],
+          backgroundColor: ['#808000', '#556b2f']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
     });
   }
 
@@ -632,49 +784,32 @@
             return;
         }
 
-        const rl = document.getElementById('regList');
         const stb = document.getElementById('studentsTbody');
-        rl.innerHTML = '';
-        stb.innerHTML = '';
-        
-        if (regs.length === 0) {
-            rl.innerHTML = '<p style="color:#9aa3b2;font-size:0.8rem;">No registrations yet.</p>';
-            stb.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No students have registered for any events yet.</td></tr>';
-            return;
+        if (stb) {
+            stb.innerHTML = '';
+            if (regs.length === 0) {
+                stb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No students have registered for any events yet.</td></tr>';
+            } else {
+                regs.forEach(r => {
+                    const name = r.name || 'Anonymous';
+                    const time = r.registrationDate ? new Date(r.registrationDate).toLocaleDateString() : 'N/A';
+                    stb.innerHTML += `<tr>
+                      <td><strong>${name}</strong></td>
+                      <td>${r.collegeId || 'N/A'}</td>
+                      <td><span class="badge b-blue">${r.event || 'Unknown'}</span></td>
+                      <td>${r.email || 'N/A'}</td>
+                      <td>${r.phone || 'N/A'}</td>
+                      <td>${time}</td>
+                    </tr>`;
+                });
+            }
         }
 
-        regs.forEach((r, i) => {
-            const clOptions = ['g2', 'g3', 'g4', 'g5', ''];
-            const name = r.name || 'Anonymous';
-            const init = name.substring(0, 2).toUpperCase();
-            const cl = clOptions[i % clOptions.length];
-            const time = r.registrationDate ? new Date(r.registrationDate).toLocaleDateString() : 'N/A';
-            
-            rl.innerHTML += `<div class="reg-row">
-            <div class="ava ${cl}">${init}</div>
-            <div>
-              <div class="rn">${name}</div>
-              <div class="re">${r.event || 'Unknown Event'} - <span style="color:#10b981">${r.department || 'N/A'}</span></div>
-            </div>
-            <div class="rt">${time}</div>
-            </div>`;
-            
-            // Populate full students table
-            stb.innerHTML += `<tr>
-              <td><strong>${name}</strong></td>
-              <td>${r.collegeId || 'N/A'}</td>
-              <td><span class="badge b-blue">${r.event || 'Unknown'}</span></td>
-              <td>${r.email || 'N/A'}</td>
-              <td>${r.phone || 'N/A'}</td>
-              <td>${time}</td>
-            </tr>`;
-        });
-
         // Update Stats
-        document.getElementById('totalEventsStat').innerText = (events && events.length) || 0;
-        document.getElementById('totalRegsStat').innerText = (regs && regs.length) || 0;
+        if (document.getElementById('totalEventsStat')) document.getElementById('totalEventsStat').innerText = (events && events.length) || 0;
+        if (document.getElementById('totalRegsStat')) document.getElementById('totalRegsStat').innerText = (regs && regs.length) || 0;
         const upcomingCount = (events && events.filter(e => e.status !== 'closed').length) || 0;
-        document.getElementById('upcomingEventsStat').innerText = upcomingCount;
+        if (document.getElementById('upcomingEventsStat')) document.getElementById('upcomingEventsStat').innerText = upcomingCount;
         
         // Trigger chart updates utilizing fetched data
         updateCharts(registrationsList, events);
@@ -682,17 +817,18 @@
     } catch (err) {
         console.error('Error fetching registrations:', err);
     }
-}
+  }
 
   // Init Data Requests
   async function initDashboard() {
     await fetchEvents();
-    await fetchRegistrations(); // Fetchevs must run first so updateCharts has the `events` variable
+    await fetchRegistrations(); 
   }
   initDashboard();
   
   // Real-time updates: refresh dashboard data every 10 seconds
-  setInterval(initDashboard, 10000);
+  // Real-time updates: refresh dashboard data every 15 seconds
+  setInterval(initDashboard, 15000);
 
   // ── MODAL ──
   function openModal()    { document.getElementById('overlay').classList.add('open'); }
@@ -700,27 +836,62 @@
   function outsideClose(e){ if (e.target.id === 'overlay') closeModal(); }
 
   async function addEvent() {
+    const errorDiv = document.getElementById('modalError');
+    errorDiv.style.display = 'none';
+    errorDiv.innerHTML = '';
+
     const name = document.getElementById('eName').value.trim();
     const date = document.getElementById('eDate').value;
     const department = document.getElementById('eDept').value;
-    const venue = document.getElementById('eVenue').value;
+    const startTime = document.getElementById('eStartTime').value;
+    const endTime = document.getElementById('eEndTime').value;
+    const place = document.getElementById('ePlace').value.trim();
     const maxSeats = document.getElementById('eSeats').value;
 
-    if (!name || !date) { alert('Please enter event name and date.'); return; }
+    if (!name || !date || !startTime || !endTime || !place) { 
+      errorDiv.style.display = 'block';
+      errorDiv.innerText = 'Please fill all required fields.';
+      return; 
+    }
+
+    if (startTime >= endTime) {
+      errorDiv.style.display = 'block';
+      errorDiv.innerText = 'End time must be after start time.';
+      return;
+    }
 
     try {
-        await fetch('/api/events', {
+        const res = await fetch('/api/events', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ name, date, department, venue, maxSeats, status: 'open' })
+            body: JSON.stringify({ 
+                name, date, department, startTime, endTime, place, maxSeats, 
+                status: 'open', isVisibleToStudents: true 
+            })
         });
-        fetchEvents();
-        closeModal();
+
+        if (res.ok) {
+            fetchEvents();
+            closeModal();
+            // Reset fields
+            document.getElementById('eName').value = '';
+            document.getElementById('eDate').value = '';
+            document.getElementById('eStartTime').value = '';
+            document.getElementById('eEndTime').value = '';
+            document.getElementById('ePlace').value = '';
+            document.getElementById('eSeats').value = '';
+        } else {
+            const data = await res.json();
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = data.message || 'Error creating event';
+        }
     } catch (err) {
         console.error('Error adding event:', err);
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = 'Connection error. Try again.';
     }
   }
 </script>

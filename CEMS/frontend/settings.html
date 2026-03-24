@@ -6,6 +6,7 @@
 <title>Account Settings - EduEvents</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="css/home.css">
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -28,23 +29,23 @@
         z-index: 50;
     }
     .sidebar-logo { padding: 22px 20px; border-bottom: 1px solid #e8ecf4; }
-    .sidebar-logo h2 { font-size: 1.1rem; font-weight: 700; color: #1a56db; }
-    .sidebar-logo.student-mode h2 { color: #10b981; }
+    .sidebar-logo h2 { font-size: 1.1rem; font-weight: 700; color: #808000; }
+    .sidebar-logo.student-mode h2 { color: #808000; }
     .sidebar-logo p { font-size: 0.7rem; color: #9aa3b2; margin-top: 2px; }
     .sidebar nav { padding: 14px 12px; flex: 1; }
     .nav-section { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #b0b9c8; padding: 10px 10px 4px; }
     .nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 0.86rem; color: #6b7a90; text-decoration: none; margin-bottom: 2px; transition: all 0.15s; font-weight: 500; }
     
-    .nav-link:hover { background: #f0f4ff; color: #1a56db; }
-    .nav-link.active { background: #eef2ff; color: #1a56db; font-weight: 600; }
+    .nav-link:hover { background: #f5f5dc; color: #808000; }
+    .nav-link.active { background: #fdfde0; color: #808000; font-weight: 600; }
     
-    .student-mode .nav-link:hover { background: #ecfdf5; color: #10b981; }
-    .student-mode .nav-link.active { background: #d1fae5; color: #059669; }
+    .student-mode .nav-link:hover { background: #f5f5dc; color: #808000; }
+    .student-mode .nav-link.active { background: #fdfde0; color: #556b2f; }
     
     .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
     .sidebar-footer { padding: 14px 16px; border-top: 1px solid #e8ecf4; display: flex; align-items: center; gap: 10px; }
-    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: #1a56db; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
-    .student-mode .user-avatar { background: #10b981; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: #808000; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
+    .student-mode .user-avatar { background: #808000; }
     .user-name { font-size: 0.82rem; font-weight: 600; }
     .user-role { font-size: 0.7rem; color: #9aa3b2; }
 
@@ -54,17 +55,19 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        overflow-y: auto;
     }
     .topbar {
-        background: #fff;
-        border-bottom: 1px solid #e8ecf4;
+        background: #808000;
+        border-bottom: 1px solid #556b2f;
+        color: #fff;
         padding: 14px 28px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         position: sticky; top: 0; z-index: 20;
     }
-    .topbar-left h1 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-left h1 { font-size: 1.1rem; font-weight: 700; color: #fff; }
     .topbar-left p  { font-size: 0.75rem; color: #9aa3b2; margin-top: 1px; }
 
     .content {
@@ -112,8 +115,8 @@
         font-family: inherit; font-size: 0.9rem; color: #111827;
         transition: border-color 0.2s; outline: none;
     }
-    .form-control:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
-    .student-mode .form-control:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+    .form-control:focus { border-color: #808000; box-shadow: 0 0 0 3px rgba(128,128,0,0.1); }
+    .student-mode .form-control:focus { border-color: #808000; box-shadow: 0 0 0 3px rgba(128,128,0,0.1); }
 
     .form-actions {
         display: flex; justify-content: flex-end; gap: 12px;
@@ -121,13 +124,13 @@
         border-top: 1px solid #f3f4f6;
     }
     .btn-primary {
-        background: #1a56db; color: white;
+        background: #808000; color: white;
         padding: 9px 20px; border-radius: 8px;
         font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; transition: 0.2s;
     }
-    .btn-primary:hover { background: #1e40af; }
-    .student-mode .btn-primary { background: #10b981; }
-    .student-mode .btn-primary:hover { background: #059669; }
+    .btn-primary:hover { background: #556b2f; }
+    .student-mode .btn-primary { background: #808000; }
+    .student-mode .btn-primary:hover { background: #556b2f; }
 
     @media (max-width: 768px) {
         .sidebar { display: none; }
@@ -160,7 +163,7 @@
 
             <div class="profile-header">
                 <div>
-                    <img id="profilePreview" class="profile-avatar-large" src="https://ui-avatars.com/api/?name=User&background=1a56db&color=fff&size=200" alt="Avatar">
+                    <img id="profilePreview" class="profile-avatar-large" src="https://ui-avatars.com/api/?name=User&background=808000&color=fff&size=200" alt="Avatar">
                 </div>
                 <div>
                     <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 3px;" id="displayName">Active User</h3>
@@ -209,6 +212,24 @@
             </div>
         </div>
     </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-links">
+                <a href="home.html">Home</a>
+                <a href="college-events.html">Events</a>
+                <a href="about.html">About</a>
+            </div>
+            <div class="footer-contact">
+                <span>📧 support@eduevents.edu</span>
+                <span>📞 +91 (800) 123-4567</span>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 EduEvents Management System. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+</div>
 </div>
 
 <script>
@@ -316,7 +337,7 @@ function saveSettings(btn) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving';
     setTimeout(() => {
         btn.innerHTML = '<i class="fas fa-check"></i> Applied';
-        const okColor = role === 'admin' ? '#10b981' : '#059669';
+        const okColor = role === 'admin' ? '#808000' : '#556b2f';
         btn.style.background = okColor;
         
         setTimeout(() => {

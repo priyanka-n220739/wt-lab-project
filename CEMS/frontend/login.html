@@ -9,8 +9,8 @@
 async function loginsuccess() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const role = document.querySelector('input[name="role"]:checked').value;
-
+    const roleElement = document.querySelector('input[name="role"]:checked');
+    const role = roleElement ? roleElement.value : null;
     try {
         const response = await fetch('/api/auth/login', {
             method: 'POST',
@@ -23,11 +23,7 @@ async function loginsuccess() {
         if (response.ok) {
             alert("Login successful");
             localStorage.setItem('cems_token', data.token);
-            if (data.role === 'admin') {
-                window.location.href = "admin_dashboard.html";
-            } else {
-                window.location.href = "student_dashboard.html";
-            }
+            window.location.href = "home.html";
         } else {
             alert("Login failed: " + data.message);
         }
@@ -120,11 +116,11 @@ transition:0.3s;
 .input-box input:valid + label{
 top:-10px;
 font-size:12px;
-color:steelblue;
+color: #808000;
 }
 
 .input-box input:focus{
-box-shadow:0 0 10px slateblue;
+box-shadow:0 0 10px #808000;
 }
 
 button{
@@ -132,7 +128,7 @@ width:100%;
 padding:12px;
 border:none;
 border-radius:6px;
-background:olivedrab;
+background:#808000;
 color:black;
 font-weight:bold;
 cursor:pointer;

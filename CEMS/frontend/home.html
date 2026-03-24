@@ -29,6 +29,30 @@ function handleDashboardClick(e) {
         window.location.href = 'student_dashboard.html';
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('cems_token');
+    if (token) {
+        const role = JSON.parse(atob(token.split('.')[1])).role;
+        if (role === 'admin') {
+            const buttons = document.querySelectorAll('.card .btn');
+            buttons.forEach(btn => {
+                const cardTitle = btn.closest('.card').querySelector('h2').innerText;
+                btn.innerHTML = `<i class="fas fa-edit"></i> Manage ${cardTitle}`;
+                btn.classList.add('admin-btn');
+                btn.style.backgroundColor = '#808000';
+                btn.style.color = 'white';
+                btn.style.width = '100%';
+                btn.style.border = 'none';
+                btn.style.padding = '12px';
+                btn.style.borderRadius = '8px';
+                btn.style.marginTop = '10px';
+                btn.style.fontSize = '1rem';
+                btn.style.fontWeight = 'bold';
+            });
+        }
+    }
+});
 </script>
 
 </head>
@@ -65,7 +89,7 @@ function handleDashboardClick(e) {
                 </p>
 
                 <a href="college-events.html">
-                <button class="btn">Explore Dept Events</button>
+                <button class="btn">Explore College Events</button>
                 </a>
 
             </div>
@@ -86,7 +110,7 @@ function handleDashboardClick(e) {
                 </p>
 
                 <a href="events.html">
-                <button class="btn">Explore Dept Events</button>
+                <button class="btn">Explore Departmental Events</button>
                 </a>
 
             </div>
@@ -95,38 +119,21 @@ function handleDashboardClick(e) {
 
 
         <footer class="footer">
-
-            <div class="footer-top">
-
-                <div class="footer-col">
-                    <strong>Campus</strong>
-                    <p>2024 Campus Events Mandreat,<br>Campus, Shuda, 20024</p>
-                </div>
-
-                <div class="footer-col">
-                    <strong>Links</strong>
-                    <p>About<br>Contact</p>
-                </div>
-
-                <div class="footer-col">
-                    <strong>Links</strong>
-                    <p>Event<br>Contact</p>
-                </div>
-
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
-                </div>
-
-            </div>
-
-            <div class="footer-bottom">
-                &copy; 2024 Campus Events Management
-            </div>
-
-        </footer>
+    <div class="footer-container">
+        <div class="footer-links">
+            <a href="home.html">Home</a>
+            <a href="college-events.html">Events</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <span>📧 support@eduevents.edu</span>
+            <span>📞 +91 (800) 123-4567</span>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 EduEvents Management System. All Rights Reserved.
+        </div>
+    </div>
+</footer>
 
     </div>
 </body>

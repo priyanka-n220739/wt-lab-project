@@ -20,8 +20,9 @@ margin-bottom:20px;
 .heading h1{
 font-size:40px;
 font-weight:bold;
-background: linear-gradient(90deg,#007BFF,#00C6FF);
+background: linear-gradient(90deg,#808000,#bab86c);
 -webkit-background-clip:text;
+background-clip: text;
 color:transparent;
 }
 
@@ -62,20 +63,8 @@ border-radius:5px;
 border:1px solid #ccc;
 }
 
-.btn{
-background:#007BFF;
-color:white;
-border:none;
-padding:10px 15px;
-border-radius:5px;
-cursor:pointer;
-margin-top:10px;
-width:100%;
-}
-
-.btn:hover{
-background:#0056b3;
-}
+.btn { background:#808000; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
+.btn:hover { background:#556b2f; }
 
 .delete-btn{
 background:#dc3545;
@@ -86,70 +75,211 @@ background:#a71d2a;
 }
 
 .register-btn{
-background:#28a745;
+background:#808000;
 }
 
 .register-btn:hover{
-background:#1e7e34;
+background:#556b2f;
 }
 
 </style>
 
 <script>
-function addEvent(selectId){
-    let eventName = prompt("Enter new event name");
-    if(eventName){
-        let select = document.getElementById(selectId);
-        let option = document.createElement("option");
-        option.text = eventName;
-        select.add(option);
-        alert("Event Added");
-    }
-}
-
-function deleteEvent(selectId){
-    let select = document.getElementById(selectId);
-    if(select.selectedIndex > 0){
-        select.remove(select.selectedIndex);
-        alert("Event Deleted");
-    } else {
-        alert("Select an event to delete");
-    }
-}
-
-function updateDashboardLink() {
+async function loadEvents() {
     const token = localStorage.getItem('cems_token');
     if (!token) return;
     try {
-        const role = JSON.parse(atob(token.split('.')[1])).role;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.role;
+
+        // Update Dashboard Link immediately
         const dashLink = document.getElementById('dashLink');
         if (role === 'admin') {
             dashLink.href = "admin_dashboard.html";
         } else {
             dashLink.href = "student_dashboard.html";
         }
+
+        // Role-based button visibility
+        document.querySelectorAll('button').forEach(btn => {
+            const text = btn.innerText.toLowerCase();
+            if (role === 'student') {
+                // Hide admin buttons for students
+                if (text.includes('add event') || text.includes('delete event')) {
+                    btn.style.display = 'none';
+                }
+            } else if (role === 'admin') {
+                // Hide register button for admins
+                if (text.includes('register')) {
+                    if (btn.parentElement.tagName === 'A') {
+                        btn.parentElement.style.display = 'none';
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                }
+            }
+        });
+
+        const resp = await fetch('/api/events/available', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const events = await resp.json();
+
+        const categories = {
+            'CSE': 'cseEvents',
+            'ECE': 'eceEvents',
+            'Mechanical': 'mechEvents'
+        };
+
+        // Clear and Reset Selects
+        Object.values(categories).forEach(id => {
+            const select = document.getElementById(id);
+            if (select) select.innerHTML = '<option>Choose Event</option>';
+        });
+
+        events.forEach(ev => {
+            const selectId = categories[ev.department];
+            if (selectId) {
+                const select = document.getElementById(selectId);
+                const option = document.createElement("option");
+                option.text = ev.name;
+                option.value = ev._id;
+                select.add(option);
+            }
+        });
     } catch (e) {
-        console.error("Error updating link", e);
+        console.error("Error loading events", e);
     }
 }
-document.addEventListener('DOMContentLoaded', updateDashboardLink);
+
+async function addEvent(selectId){
+    const deptMap = {
+        'cseEvents': 'CSE',
+        'eceEvents': 'ECE',
+        'mechEvents': 'Mechanical'
+    };
+    const department = deptMap[selectId];
+    
+    // Fill the modal with the pre-selected department
+    document.getElementById('eDept').value = department;
+    openModal();
+}
+
+function openModal() { document.getElementById('overlay').classList.add('open'); }
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function outsideClose(e) { if (e.target.id === 'overlay') closeModal(); }
+
+async function submitEvent() {
+    const errorDiv = document.getElementById('modalError');
+    errorDiv.style.display = 'none';
+
+    const token = localStorage.getItem('cems_token');
+    const name = document.getElementById('eName').value.trim();
+    const date = document.getElementById('eDate').value;
+    const department = document.getElementById('eDept').value;
+    const startTime = document.getElementById('eStartTime').value;
+    const endTime = document.getElementById('eEndTime').value;
+    const place = document.getElementById('ePlace').value.trim();
+    const maxSeats = document.getElementById('eSeats').value;
+
+    if (!name || !date || !startTime || !endTime || !place) { 
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = 'Please fill all required fields.';
+        return; 
+    }
+
+    if (startTime >= endTime) {
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = 'End time must be after start time.';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/events', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ 
+                name, date, department, startTime, endTime, place, maxSeats, 
+                status: 'open', isVisibleToStudents: true 
+            })
+        });
+        if (response.ok) {
+            alert("Event Added Successfully");
+            loadEvents();
+            closeModal();
+            // Reset form
+            document.getElementById('eName').value = '';
+            document.getElementById('eDate').value = '';
+            document.getElementById('eStartTime').value = '';
+            document.getElementById('eEndTime').value = '';
+            document.getElementById('ePlace').value = '';
+            document.getElementById('eSeats').value = '';
+        } else {
+            const data = await response.json();
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = data.message || 'Failed to add event';
+        }
+    } catch (err) {
+        console.error('Error adding event:', err);
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = 'Connection error. Try again.';
+    }
+}
+
+function logout() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem('cems_token');
+        window.location.href = "landing.html";
+    }
+}
+
+async function deleteEvent(selectId){
+    const token = localStorage.getItem('cems_token');
+    let select = document.getElementById(selectId);
+    if(select.selectedIndex > 0){
+        const eventId = select.value;
+        if (confirm("Delete this event?")) {
+            try {
+                const response = await fetch(`/api/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    alert("Event Deleted Successfully");
+                    loadEvents();
+                } else {
+                    alert("Failed to delete event");
+                }
+            } catch (err) { console.error(err); }
+        }
+    } else {
+        alert("Select an event to delete");
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadEvents);
 </script>
 
 </head>
 
 <body>
 
-<div class="navbar">
-<div class="logo">CollegeEvents</div>
+<nav class="navbar">
+    <div class="logo">
+        <i class="fas fa-user-graduate"></i> CAMPUS EVENTS
+    </div>
 
-<ul class="nav-links">
-<li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
-<li><a href="student_dashboard.html" id="dashLink"><i class="fas fa-th-large"></i> Dashboard</a></li>
-<li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
-<li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-</ul>
-
-</div>
+    <ul class="nav-links">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="student_dashboard.html" id="dashLink"><i class="fas fa-th-large"></i> Dashboard</a></li>
+        <li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+        <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</nav>
 
 <div class="heading">
 <h1>Department Events</h1>
@@ -225,6 +355,61 @@ document.addEventListener('DOMContentLoaded', updateDashboardLink);
 
 </div>
 
-</body>
+<!-- ADD EVENT MODAL -->
+<div class="overlay" id="overlay" onclick="outsideClose(event)">
+  <div class="modal">
+    <h2>➕ Add New Event</h2>
+    
+    <div id="modalError" style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; display: none; border: 1px solid #fecaca;"></div>
 
+    <div class="fg">
+      <label>Event Name</label>
+      <input id="eName" type="text" placeholder="e.g. Workshop 2026"/>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input id="eDate" type="date"/></div>
+      <div class="fg">
+        <label>Department</label>
+        <select id="eDept">
+          <option>CSE</option>
+          <option>ECE</option>
+          <option>Mechanical</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="frow">
+      <div class="fg"><label>Start Time</label><input id="eStartTime" type="time"/></div>
+      <div class="fg"><label>End Time</label><input id="eEndTime" type="time"/></div>
+    </div>
+
+    <div class="frow">
+      <div class="fg"><label>Place / Venue</label><input id="ePlace" type="text" placeholder="e.g. Lab 1"/></div>
+      <div class="fg"><label>Max Seats</label><input id="eSeats" type="number" placeholder="50"/></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitEvent()">Create Event</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-links">
+            <a href="home.html">Home</a>
+            <a href="college-events.html">Events</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <span>📧 support@eduevents.edu</span>
+            <span>📞 +91 (800) 123-4567</span>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 EduEvents Management System. All Rights Reserved.
+        </div>
+    </div>
+</footer>
+
+</body>
 </html>

@@ -47,23 +47,23 @@ background-repeat:no-repeat;
 @keyframes floatGlow {
   0% {
     transform: translateY(0);
-    text-shadow: 0 0 5px lightseagreen;
+    text-shadow: 0 0 5px #808000;
   }
   25%{
     transform:translateY(1px);
-    text-shadow:0 0 5px deeppink;
+    text-shadow:0 0 5px #556b2f;
   }
   50% {
     transform: translateY(-6px);
-    text-shadow: 0 0 20px gold;
+    text-shadow: 0 0 20px #fbbf24;
   }
   75%{
     transform:translateY(-2px);
-    text-shadow:0 0 15px darkmagenta;
+    text-shadow:0 0 15px #047857;
   }
   100% {
     transform: translateY(0);
-    text-shadow: 0 0 5px darksalmon;
+    text-shadow: 0 0 5px #808000;
   }
 }
 
@@ -84,12 +84,12 @@ background-repeat:no-repeat;
 }
 
 .register{
-    background:burlywood;
+    background:#808000;
     color:black;
 }
 
 .login{
-    background:olive;
+    background:#556b2f;
     color:black;
 }
 

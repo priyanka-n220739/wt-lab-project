@@ -4,9 +4,10 @@
 <title>Register Event</title>
 <!-- Font Awesome Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="css/home.css">
 <style>
 /* Navbar */
-.navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 40px; background:#007BFF; color:white; font-family: sans-serif; }
+.navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 40px; background:#808000; color:white; font-family: sans-serif; }
 .logo { font-size:22px; font-weight:bold; }
 .nav-links { list-style:none; display:flex; gap:25px; margin: 0; padding: 0; }
 .nav-links a { color:white; text-decoration:none; font-size:16px; }
@@ -14,7 +15,7 @@
 
 /* Heading */
 .heading { text-align:center; margin-top:40px; margin-bottom:10px; font-family: sans-serif; }
-.heading h1 { font-size:40px; font-weight:bold; background: linear-gradient(90deg,#007BFF,#00C6FF); -webkit-background-clip:text; color:transparent; margin: 0; }
+.heading h1 { font-size:40px; font-weight:bold; background: linear-gradient(90deg,#808000,#bab86c); -webkit-background-clip:text; background-clip: text; color:transparent; margin: 0; }
 .heading p { color: #666; font-size: 16px; margin-top: 10px; }
 
 /* Events Grid */
@@ -38,12 +39,12 @@
 }
 .event-card-header { padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
 .event-title { font-size: 1.3rem; font-weight: bold; color: #2d3a4a; margin-top: 10px; margin-bottom: 0;}
-.event-badge { display: inline-block; padding: 5px 12px; background: #eef2ff; color: #1a56db; font-size: 0.75rem; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.event-badge { display: inline-block; padding: 5px 12px; background: #f5f5dc; color: #808000; font-size: 0.75rem; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 .event-details { margin-bottom: 20px; flex-grow: 1; }
 .detail-item { display: flex; align-items: center; margin-bottom: 12px; color: #6b7a90; font-size: 0.9rem; }
-.detail-item i { width: 25px; color: #007BFF; font-size: 1.1rem; }
-.btn-register-card { width: 100%; padding: 12px; background: #007BFF; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit;}
-.btn-register-card:hover { background: #0056b3; }
+.detail-item i { width: 25px; color: #808000; font-size: 1.1rem; }
+.btn-register-card { width: 100%; padding: 12px; background: #808000; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit;}
+.btn-register-card:hover { background: #556b2f; }
 
 /* Modal Styles */
 .modal-overlay {
@@ -68,23 +69,27 @@
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 0.85rem;}
 .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; outline:none; transition: border 0.2s;}
-.form-group input:focus, .form-group select:focus { border-color: #007BFF; }
-.btn-submit { width: 100%; background: #10b981; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: background 0.2s; font-family: inherit;}
-.btn-submit:hover { background: #059669; }
+.form-group input:focus, .form-group select:focus { border-color: #808000; }
+.btn-submit { width: 100%; background: #808000; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: background 0.2s; font-family: inherit;}
+.btn-submit:hover { background: #556b2f; }
 
-.success { display:none; text-align:center; background:#d1fae5; color:#065f46; padding:15px; border-radius:6px; margin-top:20px; font-weight:600; font-size: 0.95rem; border: 1px solid #10b981; }
+.success { display:none; text-align:center; background:#f5f5dc; color:#556b2f; padding:15px; border-radius:6px; margin-top:20px; font-weight:600; font-size: 0.95rem; border: 1px solid #808000; }
 </style>
 </head>
 <body style="background:#f4f7fb; margin:0;">
 
 <nav class="navbar">
-<div class="logo"><i class="fas fa-user-graduate"></i> EduEvents</div>
-<ul class="nav-links">
-<li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
-<li><a href="student_dashboard.html" onclick="if(localStorage.getItem('cems_token')){let role=JSON.parse(atob(localStorage.getItem('cems_token').split('.')[1])).role; if(role==='admin') {window.location.href='admin_dashboard.html'; return false;}}"><i class="fas fa-th-large"></i> Dashboard</a></li>
-<li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
-<li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-</ul>
+    <div class="logo">
+        <i class="fas fa-user-graduate"></i> CAMPUS EVENTS
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="student_dashboard.html" id="dashLink"><i class="fas fa-th-large"></i> Dashboard</a></li>
+        <li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+        <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
 </nav>
 
 <div class="heading">
@@ -108,6 +113,7 @@
         
         <form id="eventForm">
             <input type="hidden" id="eventTargetName">
+            <input type="hidden" id="eventTargetId">
             
             <div class="form-group">
                 <label>Full Name</label>
@@ -138,6 +144,7 @@
         </form>
         
         <div class="success" id="successMsg">✅ Registration Successful! Returning you back...</div>
+        <div id="errorMsg" style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-top: 15px; display: none; border: 1px solid #fecaca;"></div>
     </div>
 </div>
 
@@ -162,37 +169,41 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        events.forEach(ev => {
-            const dateStr = new Date(ev.date).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' });
-            
-            const card = document.createElement("div");
-            card.className = "event-card";
-            card.innerHTML = `
-                <div class="event-card-header">
-                    <div class="event-badge">${ev.department}</div>
-                    <h3 class="event-title">${ev.name}</h3>
-                </div>
-                <div class="event-details">
-                    <div class="detail-item"><i class="fas fa-calendar-check"></i> <span>${dateStr}</span></div>
-                    <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.venue || 'Venue TBA'}</span></div>
-                    <div class="detail-item"><i class="fas fa-users"></i> <span>Seats: ${ev.maxSeats || 'Unlimited'}</span></div>
-                </div>
-                <button class="btn-register-card" onclick="openModal('${ev.name}')">Register Now</button>
-            `;
-            grid.appendChild(card);
-        });
+            events.forEach(ev => {
+                const dateStr = new Date(ev.date).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' });
+                const timeStr = (ev.startTime && ev.endTime) ? `${ev.startTime} - ${ev.endTime}` : 'TBA';
+                
+                const card = document.createElement("div");
+                card.className = "event-card";
+                card.innerHTML = `
+                    <div class="event-card-header">
+                        <div class="event-badge">${ev.department}</div>
+                        <h3 class="event-title">${ev.name}</h3>
+                    </div>
+                    <div class="event-details">
+                        <div class="detail-item"><i class="fas fa-calendar-check"></i> <span>${dateStr}</span></div>
+                        <div class="detail-item"><i class="fas fa-clock"></i> <span>${timeStr}</span></div>
+                        <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.place || ev.venue || 'TBA'}</span></div>
+                        <div class="detail-item"><i class="fas fa-users"></i> <span>Seats: ${ev.maxSeats || 'Unlimited'}</span></div>
+                    </div>
+                    <button class="btn-register-card" onclick="openModal('${ev.name.replace(/'/g, "\\'")}', '${ev._id}')">Register Now</button>
+                `;
+                grid.appendChild(card);
+            });
 
     } catch (err) {
         console.error("Failed to load events", err);
     }
 });
 
-function openModal(eventName) {
+function openModal(eventName, eventId) {
     document.getElementById("modalEventTitle").innerText = `Register for ${eventName}`;
     document.getElementById("eventTargetName").value = eventName;
+    document.getElementById("eventTargetId").value = eventId;
     
     // Reset from potential previous attempts
     document.getElementById("successMsg").style.display = "none";
+    document.getElementById("errorMsg").style.display = "none";
     document.getElementById("eventForm").style.display = "block";
     
     document.getElementById("registrationModal").classList.add("open");
@@ -213,11 +224,14 @@ window.onclick = function(event) {
 document.getElementById("eventForm").addEventListener("submit", async function(e){
     e.preventDefault();
     
+    document.getElementById("errorMsg").style.display = "none";
+    
     let name = document.getElementById("name").value;
     let email = document.getElementById("email").value;
     let phone = document.getElementById("phone").value;
     let department = document.getElementById("department").value;
     let event = document.getElementById("eventTargetName").value;
+    let eventId = document.getElementById("eventTargetId").value;
 
     try {
         const response = await fetch('/api/events/register', {
@@ -226,7 +240,7 @@ document.getElementById("eventForm").addEventListener("submit", async function(e
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ name, email, phone, department, event })
+            body: JSON.stringify({ name, email, phone, department, event, eventId })
         });
 
         const data = await response.json();
@@ -241,10 +255,57 @@ document.getElementById("eventForm").addEventListener("submit", async function(e
                 closeModal();
             }, 2500);
         } else {
-            alert("Registration failed: " + data.message);
+            const errorMsg = document.getElementById("errorMsg");
+            errorMsg.style.display = "block";
+            errorMsg.innerText = data.message || "Registration failed";
         }
     } catch (err) {
-        alert("Server error. Please try again later.");
+        const errorMsg = document.getElementById("errorMsg");
+        errorMsg.style.display = "block";
+        errorMsg.innerText = "Server error. Please try again later.";
+    }
+});
+</script>
+
+
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-links">
+            <a href="home.html">Home</a>
+            <a href="college-events.html">Events</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <span>📧 support@eduevents.edu</span>
+            <span>📞 +91 (800) 123-4567</span>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 EduEvents Management System. All Rights Reserved.
+        </div>
+    </div>
+</footer>
+
+<script>
+function logout() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem('cems_token');
+        window.location.href = "landing.html";
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('cems_token');
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const dashLink = document.getElementById('dashLink');
+            if (payload.role === 'admin') {
+                dashLink.href = "admin_dashboard.html";
+            } else {
+                dashLink.href = "student_dashboard.html";
+            }
+        } catch(e) { console.error(e); }
     }
 });
 </script>

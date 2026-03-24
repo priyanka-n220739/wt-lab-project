@@ -22,12 +22,12 @@ body {
 
 /* Navbar */
 .navbar {
-    background-color: #1a202c;
+    background-color: #808000;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 30px 50px;
+    padding: 15px 50px;
 }
 
 .logo {
@@ -93,7 +93,7 @@ body {
     top: 15px;
     left: 50%;
     transform: translateX(-50%);
-    color: #1a202c;
+    color: #064e3b;
     font-weight: bold;
     font-size: 0.9rem;
     letter-spacing: 1px;
@@ -101,7 +101,7 @@ body {
 
 .card h2 {
     margin-bottom: 15px;
-    color: #1a202c;
+    color: #808000;
 }
 
 .card p {
@@ -113,54 +113,184 @@ body {
 }
 
 .btn {
-    background-color: transparent;
-    border: 1px solid #a0aec0;
-    padding: 10px 25px;
-    border-radius: 5px;
+    background-color: #808000;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: 500;
-    transition: 0.3s;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .btn:hover {
-    background-color: #f7fafc;
-    border-color: #1a202c;
+    background-color: #556b2f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
-/* Footer */
+/* Professional 20% Footer */
 .footer {
-    background-color:black;
-    padding: 30px 50px 10px;
+    background-color: #808000; /* Matching Navbar Color */
+    color: #edf2f7;
+    padding: 30px 0 20px;
+    font-size: 0.9rem;
+    width: 100%;
+    margin-top: auto;
 }
 
-.footer-top {
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
     display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid white;
-    padding-bottom: 20px;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 0 20px;
 }
 
-.footer-col strong {
-    display: block;
-    margin-bottom: 10px;
+.footer-contact {
+    display: flex;
+    gap: 30px;
+    margin-top: 5px;
+    color: #e2e8f0;
 }
 
-.footer-col p {
-    font-size: 0.85rem;
-    color: white;
-    line-height: 1.6;
+.footer-links {
+    display: flex;
+    gap: 25px;
 }
 
-.social-links a {
-    color: white;
-    font-size: 1.2rem;
-    margin-left: 20px;
+.footer-links a {
+    color: #f7fafc;
     text-decoration: none;
+    transition: color 0.2s;
+    font-weight: 500;
+}
+
+.footer-links a:hover {
+    color: white;
 }
 
 .footer-bottom {
-    text-align: center;
+    margin-top: 15px;
     font-size: 0.8rem;
-    color:white;
-    padding: 15px 0;
+    color: #e2e8f0;
+}
+
+@media (min-width: 768px) {
+    .footer-container {
+        flex-direction: column;
+        justify-content: center;
+    }
+}
+
+/* Modal Styles */
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.overlay.open {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    width: 450px;
+    max-width: 90vw;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal h2 {
+    margin-bottom: 20px;
+    color: #064e3b;
+    font-size: 1.5rem;
+}
+
+.fg {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.fg label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #4a5568;
+    margin-bottom: 5px;
+}
+
+.fg input, .fg select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    color: #2d3748;
+}
+
+.fg input:focus, .fg select:focus {
+    border-color: #808000;
+}
+
+.frow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.modal-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.btn-ghost {
+    background: none;
+    border: 1px solid #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s;
+    color: #4a5568;
+}
+
+.btn-ghost:hover {
+    background: #f7fafc;
+}
+
+.btn-primary {
+    background: #808000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-primary:hover {
+    background: #556b2f;
 }

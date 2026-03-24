@@ -6,29 +6,45 @@
 <title>Register</title>
 
 <script>
+function toggleCollegeId() {
+    const role = document.getElementById('role').value;
+    const box = document.getElementById('collegeIdBox');
+    if (role === 'admin') {
+        box.style.display = 'none';
+        document.getElementById('collegeId').removeAttribute('required');
+    } else {
+        box.style.display = 'block';
+        document.getElementById('collegeId').setAttribute('required', 'required');
+    }
+}
+
 async function registersuccess() {
-    const collegeId = document.getElementById('collegeId').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const role = document.getElementById('role') ? document.getElementById('role').value : 'student';
+    const role = document.getElementById('role').value;
 
-    try {
-        const response = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ collegeId, email, password, role })
-        });
+    let bodyData = {
+        role,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+    };
 
-        const data = await response.json();
+    // only for student
+    if (role === "student") {
+        bodyData.collegeId = document.getElementById('collegeId').value;
+    }
 
-        if (response.ok) {
-            alert("Registration successful");
-            window.location.href = "login.html";
-        } else {
-            alert("Registration failed: " + data.message);
-        }
-    } catch (err) {
-        alert("Server error. Please try again later.");
+    const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyData)
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+        alert("Registration successful");
+        window.location.href = "login.html";
+    } else {
+        alert("Registration failed: " + data.message);
     }
 }
 </script>
@@ -122,13 +138,13 @@ transition:0.3s;
 .input-box input:valid + label{
 top:-10px;
 font-size:12px;
-color:steelblue;
+color:#808000;
 }
 
 /* glow effect */
 
 .input-box input:focus{
-box-shadow:0 0 10px steelblue;
+box-shadow:0 0 10px #808000;
 }
 
 /* button */
@@ -138,7 +154,7 @@ width:100%;
 padding:12px;
 border:none;
 border-radius:6px;
-background:olivedrab;
+background:#808000;
 color:black;
 font-weight:bold;
 cursor:pointer;
@@ -184,9 +200,18 @@ font-size:15px;
 
 <h2>Register</h2>
 
-<form>
+<form onsubmit="event.preventDefault(); registersuccess();">
 
-<div class="input-box">
+<div class="input-box" style="margin-top: 5px;">
+<label style="position: static; display: block; font-size: 14px; margin-bottom: 5px; color: white;">Register As</label>
+<select id="role" required onchange="toggleCollegeId()" style="width:100%; padding:12px; border:none; outline:none; border-radius:5px; background:rgba(255,255,255,0.2); color:white; font-size:15px;">
+    <option value="" disabled selected>Select Role</option>
+    <option value="student">Student</option>
+    <option value="admin">Admin</option>
+</select>
+</div>
+
+<div class="input-box" id="collegeIdBox">
 <input type="text" id="collegeId" required>
 <label>College ID</label>
 </div>
@@ -199,15 +224,6 @@ font-size:15px;
 <div class="input-box">
 <input type="password" id="password" required>
 <label>Password</label>
-</div>
-
-<div class="input-box" style="margin-top: 30px;">
-<select id="role" required>
-    <option value="" disabled selected>Select Role</option>
-    <option value="student">Student</option>
-    <option value="admin">Admin</option>
-</select>
-<label>Register As</label>
 </div>
 
 <button type="button" onclick="registersuccess()">Register</button>

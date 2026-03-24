@@ -46,7 +46,7 @@ width:220px;
 
 .achievement-card i{
 font-size:35px;
-color:#0077ff;
+color:#808000;
 margin-bottom:10px;
 }
 
@@ -124,17 +124,17 @@ color:white;
 <div class="hero-section">
 
 <nav class="navbar">
-<div class="logo">
-<i class="fas fa-user-graduate"></i> CAMPUS EVENTS
-</div>
+    <div class="logo">
+        <i class="fas fa-user-graduate"></i> CAMPUS EVENTS
+    </div>
 
-<ul class="nav-links">
-<li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
-<li><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
-<li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
-<li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
-<li><a href="landing.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-</ul>
+    <ul class="nav-links">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="student_dashboard.html" id="dashLink"><i class="fas fa-th-large"></i> Dashboard</a></li>
+        <li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+        <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
 </nav>
 
 <!-- ABOUT PLATFORM -->
@@ -265,27 +265,48 @@ to build an active and engaging campus community.
 </section>
 
 
-<!-- CONTACT -->
-
-<section class="contact-section">
-
-<h2>Contact Us</h2>
-
-<div class="contact-details">
-
-<p><i class="fas fa-envelope"></i> campusevents@gmail.com</p>
-
-<p><i class="fas fa-phone"></i> +91 9876543210</p>
-
-<p><i class="fas fa-phone"></i> +91 9123456780</p>
-
-<p><i class="fas fa-map-marker-alt"></i> Campus Events Office, University Campus</p>
-
 </div>
 
-</section>
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-links">
+            <a href="home.html">Home</a>
+            <a href="college-events.html">Events</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <span>📧 support@eduevents.edu</span>
+            <span>📞 +91 (800) 123-4567</span>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 EduEvents Management System. All Rights Reserved.
+        </div>
+    </div>
+</footer>
 
-</div>
+<script>
+function logout() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem('cems_token');
+        window.location.href = "landing.html";
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('cems_token');
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const dashLink = document.getElementById('dashLink');
+            if (payload.role === 'admin') {
+                dashLink.href = "admin_dashboard.html";
+            } else {
+                dashLink.href = "student_dashboard.html";
+            }
+        } catch(e) { console.error(e); }
+    }
+});
+</script>
 
 </body>
 </html>
