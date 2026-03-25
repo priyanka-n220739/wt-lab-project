@@ -10,6 +10,8 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const EventRegistration = require('./models/EventRegistration');
 const Event = require('./models/Event');
+const nodemailer = require('nodemailer');
+const cron = require('node-cron');
 
 
 const app = express();
@@ -19,7 +21,7 @@ const JWT_SECRET = process.env.JWT_SECRET ;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // Connect to MongoDB
@@ -32,6 +34,36 @@ mongoose.connect(MONGO_URI, { family: 4 })
     console.error('Database Connection Error!');
     console.error('Reason:', err.message);
   });
+
+// =======================
+// EMAIL CONFIGURATION
+// =======================
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+const sendEmail = async (to, subject, text, html) => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.log('Email configuration missing in .env. Skipping email send for:', to);
+      return;
+  }
+  try {
+    await transporter.sendMail({
+      from: `"EduEvents Team" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      text,
+      html
+    });
+    console.log(`Email successfully sent to ${to}`);
+  } catch (err) {
+    console.error(`Failed to send email to ${to}:`, err.message);
+  }
+};
 
 // =======================
 // AUTH MIDDLEWARE
@@ -56,6 +88,13 @@ const adminMiddleware = (req, res, next) => {
   next();
 };
 
+const staffMiddleware = (req, res, next) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'organiser') {
+    return res.status(403).json({ message: 'Access denied: Staff only' });
+  }
+  next();
+};
+
  
 // AUTHENTICATION ROUTES
  
@@ -65,11 +104,16 @@ const DEMO_MODE = false;
 // Register User
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { role, collegeId, email, password } = req.body;
+    const { role, collegeId, email, password, department } = req.body;
 
-    //  basic validation
+    // basic validation
     if (!email || !password || !role) {
       return res.status(400).json({ message: 'Email, password, and role are required' });
+    }
+
+    // organiser needs department
+    if (role === 'organiser' && !department) {
+        return res.status(400).json({ message: 'Department is required for organisers' });
     }
 
     //  only student needs collegeId
@@ -92,7 +136,8 @@ app.post('/api/auth/register', async (req, res) => {
       role,
       email,
       password: hashedPassword,
-      collegeId: role === 'admin' ? null : collegeId
+      collegeId: (role === 'admin' || role === 'organiser') ? null : collegeId,
+      department: role === 'organiser' ? department : null
     });
 
     await newUser.save();
@@ -137,7 +182,8 @@ app.post('/api/auth/login', async (req, res) => {
       {
         id: user._id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        department: user.department
       },
       process.env.JWT_SECRET,
       { expiresIn: '3h' }
@@ -191,8 +237,8 @@ const checkConflict = async (date, startTime, endTime, place, excludeId = null) 
   return null;
 };
 
-// ADMIN: Create Event
-app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
+// ADMIN/ORGANISER: Create Event
+app.post('/api/events', authMiddleware, staffMiddleware, async (req, res) => {
   try {
     const { name, date, department, startTime, endTime, place, maxSeats, image, status } = req.body;
     
@@ -211,6 +257,10 @@ app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
       });
     }
 
+    if (req.user.role === 'organiser' && department !== req.user.department && department !== 'All') {
+        return res.status(403).json({ message: `Organisers can only create events for their department (${req.user.department})` });
+    }
+
     const eventDate = new Date(date);
     const startOfDay = new Date(eventDate);
     startOfDay.setUTCHours(0,0,0,0);
@@ -221,20 +271,20 @@ app.post('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
     await newEvent.save();
     res.status(201).json(newEvent);
   } catch (err) {
+    console.error('Event Creation Error:', err);
     res.status(500).json({ message: 'Server error creating event', error: err.message });
   }
 });
 
 // ADMIN: Get all Events (shows everything)
-app.get('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
-  if (DEMO_MODE) {
-    return res.json([
-      { _id: '1', name: 'Hackathon 2026', date: new Date(), department: 'CSE', status: 'open', isVisibleToStudents: true },
-      { _id: '2', name: 'Cultural Fest', date: new Date(), department: 'Cultural', status: 'upcoming', isVisibleToStudents: true }
-    ]);
-  }
+// STAFF: Get all Events (shows everything or filtered for organiser)
+app.get('/api/events', authMiddleware, staffMiddleware, async (req, res) => {
   try {
-    const events = await Event.find().sort({ date: 1 });
+    const query = {};
+    if (req.user.role === 'organiser') {
+        query.$or = [{ department: req.user.department }, { department: 'All' }];
+    }
+    const events = await Event.find(query).sort({ date: 1 });
     res.json(events);
   } catch (err) {
     res.status(500).json({ message: 'Server error fetching events' });
@@ -242,8 +292,17 @@ app.get('/api/events', authMiddleware, adminMiddleware, async (req, res) => {
 });
 
 // ADMIN: Update Event
-app.put('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) => {
+// STAFF: Update Event
+app.put('/api/events/:id', authMiddleware, staffMiddleware, async (req, res) => {
     try {
+      const currentEvent = await Event.findById(req.params.id);
+      if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
+
+      // Organiser check
+      if (req.user.role === 'organiser' && currentEvent.department !== req.user.department) {
+          return res.status(403).json({ message: 'Access denied: Organisers can only manage their department events' });
+      }
+
       const { date, startTime, endTime, place } = req.body;
 
       // If we are updating timing or location, check for conflicts
@@ -286,13 +345,18 @@ app.put('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) => 
 });
 
 // ADMIN: Delete Event
-app.delete('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) => {
-    if (DEMO_MODE) {
-      return res.json({ message: 'DEMO MODE: Event deleted successfully' });
-    }
+// STAFF: Delete Event
+app.delete('/api/events/:id', authMiddleware, staffMiddleware, async (req, res) => {
     try {
-      const deletedEvent = await Event.findByIdAndDelete(req.params.id);
-      if (!deletedEvent) return res.status(404).json({ message: 'Event not found' });
+      const currentEvent = await Event.findById(req.params.id);
+      if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
+
+      // Organiser check
+      if (req.user.role === 'organiser' && currentEvent.department !== req.user.department) {
+          return res.status(403).json({ message: 'Access denied: Organisers can only manage their department' });
+      }
+
+      await Event.findByIdAndDelete(req.params.id);
       res.json({ message: 'Event deleted successfully' });
     } catch (err) {
       res.status(500).json({ message: 'Server error deleting event' });
@@ -301,13 +365,6 @@ app.delete('/api/events/:id', authMiddleware, adminMiddleware, async (req, res) 
 
 // STUDENT & ANY AUTHENTICATED USER: Get visibly available events
 app.get('/api/events/available', authMiddleware, async (req, res) => {
-    if (DEMO_MODE) {
-      return res.json([
-        { _id: '1', name: 'Hackathon 2026', date: new Date(), department: 'CSE', status: 'open', isVisibleToStudents: true },
-        { _id: '2', name: 'Cultural Fest', date: new Date(), department: 'Cultural', status: 'upcoming', isVisibleToStudents: true },
-        { _id: '3', name: 'Mega Dance 2026', date: new Date(), department: 'Cultural', status: 'open', isVisibleToStudents: true }
-      ]);
-    }
     try {
       const events = await Event.find({ isVisibleToStudents: true, status: { $in: ['open', 'upcoming'] } }).sort({ date: 1 });
       res.json(events);
@@ -323,7 +380,7 @@ app.get('/api/events/available', authMiddleware, async (req, res) => {
 // Register for an event
 app.post('/api/events/register', authMiddleware, async (req, res) => {
   try {
-    const { name, email, phone, department, event, eventId } = req.body;
+    const { name, email, phone, department, event, eventId, isVolunteer, volunteerRole } = req.body;
     
     // Fetch user to get collegeId
     const user = await User.findById(req.user.id);
@@ -380,9 +437,31 @@ app.post('/api/events/register', authMiddleware, async (req, res) => {
       eventId: targetEvent._id,
       collegeId: user.collegeId,
       user_id: req.user.id,
+      isVolunteer: isVolunteer || false,
+      volunteerRole: isVolunteer ? volunteerRole : null,
       registrationDate: new Date()
     });
     await newRegistration.save();
+
+    // 📧 SEND EMAIL NOTIFICATION (REGISTRATION SUCCESSFUL)
+    const emailSubject = `Confirmation: Registered for ${targetEvent.name}`;
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; border: 1px solid #ddd; padding: 20px;">
+        <h2 style="color: #f06292;">Registration Successful! 🎉</h2>
+        <p>Hi <b>${name}</b>,</p>
+        <p>You have successfully registered for <b>${targetEvent.name}</b>.</p>
+        <hr/>
+        <p>📅 <b>Date:</b> ${new Date(targetEvent.date).toLocaleDateString()}</p>
+        <p>🕒 <b>Time:</b> ${targetEvent.startTime} - ${targetEvent.endTime}</p>
+        <p>📍 <b>Venue:</b> ${targetEvent.place}</p>
+        ${isVolunteer ? `<p>🙋 <b>Role:</b> Volunteer (${volunteerRole})</p>` : ''}
+        <hr/>
+        <p>See you there!</p>
+        <p style="font-size: 0.8rem; color: #777;">Regards,<br/>EduEvents Team</p>
+      </div>
+    `;
+    sendEmail(email, emailSubject, `Successfully registered for ${targetEvent.name}`, emailHtml);
+
     res.status(201).json({ message: 'Successfully registered for the event' });
   } catch (error) {
     console.error(error);
@@ -391,9 +470,15 @@ app.post('/api/events/register', authMiddleware, async (req, res) => {
 });
 
 // ADMIN: Get all event registrations
-app.get('/api/events/registrations', authMiddleware, adminMiddleware, async (req, res) => {
+// STAFF: Get event registrations (filtered for organiser)
+app.get('/api/events/registrations', authMiddleware, staffMiddleware, async (req, res) => {
   try {
-    const registrations = await EventRegistration.find().sort({ registrationDate: -1 });
+    let query = {};
+    if (req.user.role === 'organiser') {
+        const myEvents = await Event.find({ $or: [{ department: req.user.department }, { department: 'All' }] }).distinct('_id');
+        query = { eventId: { $in: myEvents } };
+    }
+    const registrations = await EventRegistration.find(query).sort({ registrationDate: -1 });
     res.status(200).json(registrations);
   } catch (error) {
     console.error(error);
@@ -424,6 +509,49 @@ app.get('/api/debug/users', async (req, res) => {
 
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'landing.html'));
+});
+
+// =======================
+// SCHEDULED REMINDERS
+// =======================
+// Run daily at 10 AM (00 10 * * *) or every hour for testing (* * * * *)
+cron.schedule('0 10 * * *', async () => {
+    console.log('--- 🛡️ RUNNING DAILY EVENT REMINDERS CRON ---');
+    try {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const startOfTomorrow = new Date(tomorrow.setUTCHours(0, 0, 0, 0));
+        const endOfTomorrow = new Date(tomorrow.setUTCHours(23, 59, 59, 999));
+
+        // Find events happening tomorrow
+        const tomorrowEvents = await Event.find({ 
+            date: { $gte: startOfTomorrow, $lte: endOfTomorrow } 
+        });
+
+        for (const ev of tomorrowEvents) {
+            const registrations = await EventRegistration.find({ eventId: ev._id });
+            console.log(`Sending reminders for ${ev.name} to ${registrations.length} students...`);
+
+            for (const r of registrations) {
+                const subject = `Reminder: '${ev.name}' is Tomorrow!`;
+                const html = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #eee;">
+                        <h2 style="color: #f06292;">Event Reminder ⏰</h2>
+                        <p>Hi ${r.name},</p>
+                        <p>This is a friendly reminder that the event <b>${ev.name}</b> is happening tomorrow!</p>
+                        <hr/>
+                        <p>📍 <b>Venue:</b> ${ev.place}</p>
+                        <p>⏰ <b>Time:</b> ${ev.startTime} - ${ev.endTime}</p>
+                        <hr/>
+                        <p>Don't forget to be there!</p>
+                    </div>
+                `;
+                sendEmail(r.email, subject, `Reminder: ${ev.name} is tomorrow!`, html);
+            }
+        }
+    } catch (err) {
+        console.error('Cron reminder failed:', err);
+    }
 });
 
 // Start Server

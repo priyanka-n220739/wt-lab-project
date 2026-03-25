@@ -9,7 +9,9 @@ const eventRegistrationSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   department: { type: String, required: true },
   event: { type: String, required: true }, // Keeping for backwards compatibility if needed
-  registrationDate: { type: Date, default: Date.now }
+  registrationDate: { type: Date, default: Date.now },
+  isVolunteer: { type: Boolean, default: false },
+  volunteerRole: { type: String, enum: ['hospitality', 'craft', 'disciplinary', 'technical', 'other'], required: false }
 });
 
 // Proper indexing for student registration conflict check as requested

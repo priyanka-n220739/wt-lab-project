@@ -5,12 +5,12 @@
     font-family: Arial, sans-serif;
 }
 
-body{
-height:100vh;
-background-image: url("https://www.shutterstock.com/image-photo/blurred-background-vibrant-scene-showcasing-600nw-2577243207.jpg");
-background-size:cover;
-background-position:center;
-background-repeat:no-repeat;
+body {
+    height: 100vh;
+    background-image: url("https://www.pixelstalk.net/wp-content/uploads/2016/10/Download-Blue-And-Pink-Images.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 /* Dark overlay */
@@ -47,23 +47,23 @@ background-repeat:no-repeat;
 @keyframes floatGlow {
   0% {
     transform: translateY(0);
-    text-shadow: 0 0 5px #808000;
+    text-shadow: 0 0 5px #f06292;
   }
   25%{
     transform:translateY(1px);
-    text-shadow:0 0 5px #556b2f;
+    text-shadow:0 0 5px #d81b60;
   }
   50% {
     transform: translateY(-6px);
-    text-shadow: 0 0 20px #fbbf24;
+    text-shadow: 0 0 20px #f48fb1;
   }
   75%{
     transform:translateY(-2px);
-    text-shadow:0 0 15px #047857;
+    text-shadow:0 0 15px #ad1457;
   }
   100% {
     transform: translateY(0);
-    text-shadow: 0 0 5px #808000;
+    text-shadow: 0 0 5px #f06292;
   }
 }
 
@@ -84,13 +84,13 @@ background-repeat:no-repeat;
 }
 
 .register{
-    background:#808000;
-    color:black;
+    background:#f06292;
+    color:white;
 }
 
 .login{
-    background:#556b2f;
-    color:black;
+    background:#d81b60;
+    color:white;
 }
 
 .btn:hover{

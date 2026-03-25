@@ -23,7 +23,7 @@ async function loginsuccess() {
         if (response.ok) {
             alert("Login successful");
             localStorage.setItem('cems_token', data.token);
-            window.location.href = "home.html";
+            window.location.href = "dash_board.html";
         } else {
             alert("Login failed: " + data.message);
         }
@@ -47,7 +47,7 @@ height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-background:url("https://www.shutterstock.com/image-photo/blurred-background-vibrant-scene-showcasing-600nw-2577243207.jpg");
+background:url("https://www.pixelstalk.net/wp-content/uploads/2016/10/Download-Blue-And-Pink-Images.jpg");
 background-size:cover;
 }
 
@@ -116,11 +116,11 @@ transition:0.3s;
 .input-box input:valid + label{
 top:-10px;
 font-size:12px;
-color: #808000;
+color: #f06292;
 }
 
 .input-box input:focus{
-box-shadow:0 0 10px #808000;
+box-shadow:0 0 10px #f06292;
 }
 
 button{
@@ -128,14 +128,15 @@ width:100%;
 padding:12px;
 border:none;
 border-radius:6px;
-background:#808000;
-color:black;
+background:#f06292;
+color:white;
 font-weight:bold;
 cursor:pointer;
 transition:0.3s;
 }
 
 button:hover{
+background:#d81b60;
 transform:scale(1.05);
 }
 
@@ -172,6 +173,7 @@ text-decoration:none;
 
 <div class="radio-group">
     <label><input type="radio" name="role" value="student" checked> Student Login</label>
+    <label><input type="radio" name="role" value="organiser"> Organiser Login</label>
     <label><input type="radio" name="role" value="admin"> Admin Login</label>
 </div>
 

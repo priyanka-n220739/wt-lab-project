@@ -6,14 +6,14 @@
 }
 
 body {
-    background-color: #f0f2f5;
+    background-color: #fff1f5;
 }
 
 /* Background Image with Blur Effect */
 .hero-section {
     min-height: 100vh;
-    background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), 
-                url('https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1920&q=80');
+    background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)),
+        url('https://th.bing.com/th/id/R.946d40a2202c889f6f7ec4603670d9af?rik=79Emc7qfXB%2fHmw&riu=http%3a%2f%2fwww.pixelstalk.net%2fwp-content%2fuploads%2f2016%2f10%2fBlue-And-Pink-Wallpaper-HD-Desktop.jpg&ehk=0b2H6pXOpUParXrIqUuhJaBgp%2bztsk8uOL23RsWhong%3d&risl=&pid=ImgRaw&r=0');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -22,7 +22,7 @@ body {
 
 /* Navbar */
 .navbar {
-    background-color: #808000;
+    background-color: #f06292;
     color: white;
     display: flex;
     justify-content: space-between;
@@ -45,7 +45,7 @@ body {
 }
 
 .nav-links a {
-    color: #cbd5e0;
+    color: #fce4ec;
     text-decoration: none;
     font-size: 0.9rem;
     transition: 0.3s;
@@ -59,19 +59,31 @@ body {
 .content {
     flex: 1;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    /* sections stack vertically */
     align-items: center;
     gap: 30px;
     padding: 40px 20px;
 }
 
+.card-row {
+    display: flex;
+    flex-direction: row;
+    /* cards are horizontal */
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
 .card {
     background: white;
     border-radius: 15px;
-    width: 450px;
+    width: 420px;
+    max-width: 100%;
     padding: 25px;
     text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .card-image-wrapper {
@@ -93,7 +105,7 @@ body {
     top: 15px;
     left: 50%;
     transform: translateX(-50%);
-    color: #064e3b;
+    color: #ad1457;
     font-weight: bold;
     font-size: 0.9rem;
     letter-spacing: 1px;
@@ -101,7 +113,7 @@ body {
 
 .card h2 {
     margin-bottom: 15px;
-    color: #808000;
+    color: #f06292;
 }
 
 .card p {
@@ -113,7 +125,7 @@ body {
 }
 
 .btn {
-    background-color: #808000;
+    background-color: #f06292;
     color: white;
     border: none;
     padding: 12px 30px;
@@ -121,18 +133,19 @@ body {
     cursor: pointer;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .btn:hover {
-    background-color: #556b2f;
+    background-color: #d81b60;
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Professional 20% Footer */
 .footer {
-    background-color: #808000; /* Matching Navbar Color */
+    background-color: #f06292;
+    /* Matching Navbar Color */
     color: #edf2f7;
     padding: 30px 0 20px;
     font-size: 0.9rem;
@@ -213,13 +226,20 @@ body {
 }
 
 @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .modal h2 {
     margin-bottom: 20px;
-    color: #064e3b;
+    color: #ad1457;
     font-size: 1.5rem;
 }
 
@@ -237,7 +257,8 @@ body {
     margin-bottom: 5px;
 }
 
-.fg input, .fg select {
+.fg input,
+.fg select {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #e2e8f0;
@@ -248,8 +269,9 @@ body {
     color: #2d3748;
 }
 
-.fg input:focus, .fg select:focus {
-    border-color: #808000;
+.fg input:focus,
+.fg select:focus {
+    border-color: #f06292;
 }
 
 .frow {
@@ -281,7 +303,7 @@ body {
 }
 
 .btn-primary {
-    background: #808000;
+    background: #f06292;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -292,5 +314,5 @@ body {
 }
 
 .btn-primary:hover {
-    background: #556b2f;
+    background: #d81b60;
 }

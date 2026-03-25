@@ -20,7 +20,7 @@ margin-bottom:20px;
 .heading h1{
 font-size:40px;
 font-weight:bold;
-background: linear-gradient(90deg,#808000,#bab86c);
+background: linear-gradient(90deg,#f06292,#f48fb1);
 -webkit-background-clip:text;
 background-clip: text;
 color:transparent;
@@ -63,8 +63,8 @@ border-radius:5px;
 border:1px solid #ccc;
 }
 
-.btn { background:#808000; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
-.btn:hover { background:#556b2f; }
+.btn { background:#f06292; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
+.btn:hover { background:#d81b60; }
 
 .delete-btn{
 background:#dc3545;
@@ -75,13 +75,35 @@ background:#a71d2a;
 }
 
 .register-btn{
-background:#808000;
+background:#f06292;
 }
 
 .register-btn:hover{
-background:#556b2f;
+background:#d81b60;
 }
 
+.event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; text-align: left; }
+.event-card { background: #fdfdfd; border: 1px solid #eee; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
+.event-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.event-details { padding: 15px; }
+.event-details h3 { font-size: 1.2rem; color: #f06292; margin-bottom: 8px; }
+.event-info { font-size: 0.85rem; color: #555; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+.event-info i { color: #f06292; width: 16px; }
+.event-card .badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+.department-card img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:8px;
+}
+
+select{
+width:100%;
+padding:8px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid #ccc;
+}
 </style>
 
 <script>
@@ -92,30 +114,56 @@ async function loadEvents() {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const role = payload.role;
 
-        // Update Dashboard Link immediately
+        // Update Dashboard Link
         const dashLink = document.getElementById('dashLink');
-        if (role === 'admin') {
+        if (role === 'admin' || role === 'organiser') {
             dashLink.href = "admin_dashboard.html";
         } else {
             dashLink.href = "student_dashboard.html";
         }
 
-        // Role-based button visibility
-        document.querySelectorAll('button').forEach(btn => {
-            const text = btn.innerText.toLowerCase();
-            if (role === 'student') {
-                // Hide admin buttons for students
-                if (text.includes('add event') || text.includes('delete event')) {
-                    btn.style.display = 'none';
-                }
-            } else if (role === 'admin') {
-                // Hide register button for admins
-                if (text.includes('register')) {
-                    if (btn.parentElement.tagName === 'A') {
-                        btn.parentElement.style.display = 'none';
-                    } else {
+        // Role-based button and card visibility
+        document.querySelectorAll('.department-card').forEach(card => {
+            const cardDept = card.querySelector('h2').innerText.split(' ')[0]; // E.g., 'CSE'
+            const buttons = card.querySelectorAll('button');
+            
+            buttons.forEach(btn => {
+                const text = btn.innerText.toLowerCase();
+                
+                if (role === 'student') {
+                    // Students see Register but not Add/Delete
+                    if (text.includes('add') || text.includes('delete')) {
                         btn.style.display = 'none';
                     }
+                } else if (role === 'organiser') {
+                    const myDept = payload.department;
+                    // Organisers don't need to register
+                    if (text.includes('register')) {
+                        btn.style.display = 'none';
+                        if (btn.parentElement.tagName === 'A') {
+                            btn.parentElement.style.display = 'none';
+                        }
+                    }
+                    // Organisers only see Add/Delete for their own department
+                    if ((text.includes('add') || text.includes('delete')) && cardDept !== myDept) {
+                        btn.style.display = 'none';
+                    }
+                } else if (role === 'admin') {
+                    // Admins see Add/Delete but not Register
+                    if (text.includes('register')) {
+                        btn.style.display = 'none';
+                        if (btn.parentElement.tagName === 'A') {
+                            btn.parentElement.style.display = 'none';
+                        }
+                    }
+                }
+            });
+
+            // Organisers only see their own department card
+            if (role === 'organiser') {
+                const myDept = payload.department;
+                if (cardDept !== myDept) {
+                    card.style.display = 'none';
                 }
             }
         });
@@ -165,6 +213,30 @@ async function addEvent(selectId){
     openModal();
 }
 
+async function deleteEvent(selectId){
+    const token = localStorage.getItem('cems_token');
+    let select = document.getElementById(selectId);
+    if(select.selectedIndex > 0){
+        const eventId = select.value;
+        if (confirm("Delete this event?")) {
+            try {
+                const response = await fetch(`/api/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    alert("Event Deleted Successfully");
+                    loadEvents();
+                } else {
+                    alert("Failed to delete event");
+                }
+            } catch (err) { console.error(err); }
+        }
+    } else {
+        alert("Select an event to delete");
+    }
+}
+
 function openModal() { document.getElementById('overlay').classList.add('open'); }
 function closeModal() { document.getElementById('overlay').classList.remove('open'); }
 function outsideClose(e) { if (e.target.id === 'overlay') closeModal(); }
@@ -202,7 +274,7 @@ async function submitEvent() {
                 'Authorization': `Bearer ${token}` 
             },
             body: JSON.stringify({ 
-                name, date, department, startTime, endTime, place, maxSeats, 
+                name, date, department, startTime, endTime, place, maxSeats, image,
                 status: 'open', isVisibleToStudents: true 
             })
         });
@@ -217,6 +289,7 @@ async function submitEvent() {
             document.getElementById('eEndTime').value = '';
             document.getElementById('ePlace').value = '';
             document.getElementById('eSeats').value = '';
+            document.getElementById('eImage').value = '';
         } else {
             const data = await response.json();
             errorDiv.style.display = 'block';
@@ -297,10 +370,6 @@ document.addEventListener('DOMContentLoaded', loadEvents);
 
 <select id="cseEvents">
 <option>Choose Event</option>
-<option>Coding Contest</option>
-<option>Hackathon</option>
-<option>AI Workshop</option>
-<option>Web Development Challenge</option>
 </select>
 
 <button class="btn" onclick="addEvent('cseEvents')">Add Event</button>
@@ -319,10 +388,6 @@ document.addEventListener('DOMContentLoaded', loadEvents);
 
 <select id="eceEvents">
 <option>Choose Event</option>
-<option>Robotics Competition</option>
-<option>Circuit Debugging</option>
-<option>IoT Workshop</option>
-<option>Embedded Systems Challenge</option>
 </select>
 
 <button class="btn" onclick="addEvent('eceEvents')">Add Event</button>
@@ -341,10 +406,6 @@ document.addEventListener('DOMContentLoaded', loadEvents);
 
 <select id="mechEvents">
 <option>Choose Event</option>
-<option>CAD Design Competition</option>
-<option>Robo Race</option>
-<option>Machine Design</option>
-<option>Automobile Workshop</option>
 </select>
 
 <button class="btn" onclick="addEvent('mechEvents')">Add Event</button>

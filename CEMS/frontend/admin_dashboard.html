@@ -37,7 +37,7 @@
     .sidebar-logo h2 {
       font-size: 1.1rem;
       font-weight: 700;
-      color: #808000;
+      color: #f06292;
     }
     .sidebar-logo p {
       font-size: 0.7rem;
@@ -69,8 +69,9 @@
       transition: all 0.15s;
       font-weight: 500;
     }
-    .nav-link:hover { background: #f5f5dc; color: #808000; }
-    .nav-link.active { background: #fdfde0; color: #556b2f; font-weight: 600; }
+    /* Side Bar Link */
+    .nav-link:hover { background: #fce4ec; color: #f06292; }
+    .nav-link.active { background: #fdf2f5; color: #d81b60; font-weight: 600; }
     .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
     .sidebar-footer {
       padding: 14px 16px;
@@ -82,7 +83,7 @@
     .user-avatar {
       width: 34px; height: 34px;
       border-radius: 50%;
-      background: #808000;
+      background: #f06292;
       color: white;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.78rem; font-weight: 700;
@@ -103,9 +104,9 @@
 
     /* ── TOPBAR ── */
     .topbar {
-      background: #808000;
+      background: #f06292;
       color: #fff;
-      border-bottom: 1px solid #556b2f;
+      border-bottom: 1px solid #d81b60;
       padding: 14px 28px;
       display: flex;
       align-items: center;
@@ -125,7 +126,7 @@
       background: #f7f8fc;
     }
     .btn-primary {
-      background: #808000;
+      background: #f06292;
       color: #fff;
       border: none;
       padding: 8px 16px;
@@ -136,7 +137,7 @@
       cursor: pointer;
       transition: background 0.15s;
     }
-    .btn-primary:hover { background: #556b2f; }
+    .btn-primary:hover { background: #d81b60; }
 
     /* ── CONTENT ── */
     .content { 
@@ -150,6 +151,12 @@
     }
 
     /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
     .stat-card {
       background: #fff;
       border: 1px solid #e8ecf4;
@@ -167,10 +174,10 @@
       font-size: 1.2rem;
       flex-shrink: 0;
     }
-    .stat-icon.blue   { background: #f5f5dc; }
-    .stat-icon.yellow { background: #fffbeb; }
-    .stat-icon.green  { background: #f5f5dc; }
-    .stat-icon.red    { background: #fff1f2; }
+    .stat-icon.blue   { background: #fce4ec; color: #ec407a; }
+    .stat-icon.yellow { background: #fdf2f5; color: #d81b60; }
+    .stat-icon.green  { background: #fce4ec; color: #f06292; }
+    .stat-icon.red    { background: #fff1f2; color: #c2185b; }
     .stat-label { font-size: 0.72rem; color: #9aa3b2; font-weight: 500; }
     .stat-value { font-size: 1.7rem; font-weight: 700; margin: 3px 0 2px; line-height: 1; }
     .stat-note  { font-size: 0.72rem; }
@@ -180,6 +187,14 @@
 
     /* ── SPACING ── */
     .card { margin-bottom: 22px; }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 25px;
+      width: 100%;
+    }
 
     /* ── CARD ── */
     .card {
@@ -195,7 +210,7 @@
       margin-bottom: 16px;
     }
     .card-head h3 { font-size: 0.92rem; font-weight: 700; }
-    .link-sm { font-size: 0.75rem; color: #808000; text-decoration: none; font-weight: 500; }
+    .link-sm { font-size: 0.75rem; color: #f06292; text-decoration: none; font-weight: 500; }
     .link-sm:hover { text-decoration: underline; }
 
     /* ── TABLE ── */
@@ -222,14 +237,14 @@
       padding: 3px 9px; border-radius: 20px;
       font-size: 0.7rem; font-weight: 600;
     }
-    .b-blue   { background: #f5f5dc; color: #808000; }
-    .b-green  { background: #f5f5dc; color: #15803d; }
+    .b-blue   { background: #fce4ec; color: #f06292; }
+    .b-green  { background: #fdf2f5; color: #15803d; }
     .b-yellow { background: #fffbeb; color: #b45309; }
     .b-red    { background: #fff1f2; color: #b91c1c; }
 
     /* ── ACTION BTNS ── */
     .act { background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.76rem; padding: 3px 7px; border-radius: 5px; font-weight: 500; }
-    .act.edit { color: #808000; } .act.edit:hover { background: #f5f5dc; }
+    .act.edit { color: #f06292; } .act.edit:hover { background: #fce4ec; }
     .act.del  { color: #dc2626; } .act.del:hover  { background: #fff1f2; }
 
     /* ── REGISTRATIONS ── */
@@ -241,13 +256,13 @@
     .reg-row:last-child { border-bottom: none; }
     .ava {
       width: 34px; height: 34px; border-radius: 50%;
-      background: #808000; color: #fff;
+      background: #f06292; color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
     }
     .ava.g2 { background: #0891b2; }
     .ava.g3 { background: #7c3aed; }
-    .ava.g4 { background: #556b2f; }
+    .ava.g4 { background: #ad1457; }
     .ava.g5 { background: #d97706; }
     .rn { font-size: 0.84rem; font-weight: 600; }
     .re { font-size: 0.73rem; color: #9aa3b2; }
@@ -266,7 +281,7 @@
 
     /* ── FOOTER ── */
     .footer {
-      background: #808000;
+      background: #f06292;
       color: #fafafa;
       padding: 50px 28px 20px;
       margin-top: 40px;
@@ -291,7 +306,7 @@
       position: absolute;
       left: 0; bottom: -8px;
       width: 30px; height: 2px;
-      background: #808000;
+      background: #d81b60;
     }
     .footer-section p {
       line-height: 1.6;
@@ -324,7 +339,7 @@
       transition: background 0.2s, transform 0.2s;
     }
     .social-icon:hover {
-      background: #808000;
+      background: #d81b60;
       transform: translateY(-3px);
     }
     .footer-bottom {
@@ -364,7 +379,7 @@
       outline: none; background: #fafbff;
       transition: border-color 0.15s;
     }
-    .fg input:focus, .fg select:focus { border-color: #808000; background: #fff; }
+    .fg input:focus, .fg select:focus { border-color: #f06292; background: #fff; }
     .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
     .btn-ghost {
@@ -378,6 +393,7 @@
     @media (max-width: 1024px) {
       .stats-grid { grid-template-columns: 1fr; }
       .grid-32 { grid-template-columns: 1fr; }
+      .chart-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
       .sidebar { display: none; }
@@ -434,29 +450,29 @@
     <!-- ROW 1: QUICK STATS (Vertical) -->
     <div class="card" style="margin-bottom: 22px;">
       <div class="card-head"><h3>🚀 Dashboard Overview</h3></div>
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <div class="stat-card" style="margin: 0; border: 1px solid #f3f4f6; background: #fafafa; flex: 1;">
+      <div class="stats-grid">
+        <div class="stat-card" style="margin: 0; border: 1px solid #fce4ec; background: #fff0f3; flex: 1;">
           <div class="stat-icon blue">📅</div>
           <div>
             <div class="stat-label">Total Events</div>
             <div class="stat-value" id="totalEventsStat">0</div>
           </div>
         </div>
-        <div class="stat-card" style="margin: 0; border: 1px solid #f3f4f6; background: #fafafa; flex: 1;">
+        <div class="stat-card" style="margin: 0; border: 1px solid #fce4ec; background: #fff0f3; flex: 1;">
           <div class="stat-icon yellow">🎓</div>
           <div>
             <div class="stat-label">Registrations</div>
             <div class="stat-value" id="totalRegsStat">0</div>
           </div>
         </div>
-        <div class="stat-card" style="margin: 0; border: 1px solid #f3f4f6; background: #fafafa; flex: 1;">
+        <div class="stat-card" style="margin: 0; border: 1px solid #fce4ec; background: #fff0f3; flex: 1;">
           <div class="stat-icon green">✅</div>
           <div>
             <div class="stat-label">Completed</div>
             <div class="stat-value">29</div>
           </div>
         </div>
-        <div class="stat-card" style="margin: 0; border: 1px solid #f3f4f6; background: #fafafa; flex: 1;">
+        <div class="stat-card" style="margin: 0; border: 1px solid #fce4ec; background: #fff0f3; flex: 1;">
           <div class="stat-icon red">⏳</div>
           <div>
             <div class="stat-label">Upcoming</div>
@@ -466,28 +482,34 @@
       </div>
     </div>
 
-    <!-- ROW 2: DEPARTMENTAL EVENT DISTRIBUTION (Requested 1st) -->
-    <div class="card" style="margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-      <div class="card-head"><h3>🏛️ Event Distribution</h3></div>
-      <div class="chart-box"><canvas id="doughnutChart"></canvas></div>
+    <!-- CHARTS GRID: Distribution & Status -->
+    <div class="chart-grid">
+      <!-- ROW 2: DEPARTMENTAL EVENT DISTRIBUTION -->
+      <div class="card" style="margin-bottom: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <div class="card-head"><h3>🏛️ Event Distribution</h3></div>
+        <div class="chart-box"><canvas id="doughnutChart"></canvas></div>
+      </div>
+
+      <!-- ROW 4: EVENT STATUS OVERVIEW -->
+      <div class="card" style="margin-bottom: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <div class="card-head"><h3>🎯 Event Status Overview</h3></div>
+        <div class="chart-box"><canvas id="pieChart"></canvas></div>
+      </div>
     </div>
 
-    <!-- ROW 3: PERFORMANCE ANALYTICS (Requested 2nd) -->
-    <div class="card" style="margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-      <div class="card-head"><h3>📊 Performance Analysis by Department</h3></div>
-      <div class="chart-box"><canvas id="barChart"></canvas></div>
-    </div>
+    <!-- CHARTS GRID: Performance & Trend -->
+    <div class="chart-grid">
+      <!-- ROW 3: PERFORMANCE ANALYTICS -->
+      <div class="card" style="margin-bottom: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <div class="card-head"><h3>📊 Performance Analysis by Department</h3></div>
+        <div class="chart-box"><canvas id="barChart"></canvas></div>
+      </div>
 
-    <!-- ROW 4: EVENT STATUS OVERVIEW (Requested 3rd) -->
-    <div class="card" style="margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-      <div class="card-head"><h3>🎯 Event Status Overview </h3></div>
-      <div class="chart-box"><canvas id="pieChart"></canvas></div>
-    </div>
-
-    <!-- ROW 5: MONTHLY TREND (Moved below requested items) -->
-    <div class="card" style="margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-      <div class="card-head"><h3>📈 Monthly Registration Trend</h3></div>
-      <div class="chart-box"><canvas id="lineChart"></canvas></div>
+      <!-- ROW 5: MONTHLY TREND -->
+      <div class="card" style="margin-bottom: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <div class="card-head"><h3>📈 Monthly Registration Trend</h3></div>
+        <div class="chart-box"><canvas id="lineChart"></canvas></div>
+      </div>
     </div>
 
     <!-- ROW 6: EVENTS TABLE (Requested 4th) -->
@@ -513,7 +535,7 @@
     </div>
 
     <!-- ROW 7: REGISTERED STUDENTS (Requested 5th) -->
-    <div class="card" id="registrationsSection" style="margin-bottom: 40px;">
+    <div class="card" id="registrationsSection" style="margin-bottom: 22px;">
       <div class="card-head">
         <h3>👥 Registered Students Details</h3>
       </div>
@@ -523,13 +545,36 @@
             <tr>
               <th>Student Name</th>
               <th>Student ID</th>
+              <th>Dept</th>
               <th>Event</th>
               <th>Email</th>
               <th>Phone</th>
+              <th>Volunteer?</th>
+              <th>Role</th>
               <th>Registration Date</th>
             </tr>
           </thead>
           <tbody id="studentsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NEW SECTION: ORGANISERS CONTACT DETAILS -->
+    <div class="card" id="organisersSection" style="margin-bottom: 40px; display: none;">
+      <div class="card-head">
+        <h3>📞 Organisers Contact Details</h3>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Organiser Name</th>
+              <th>Department</th>
+              <th>Email</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody id="organisersTbody"></tbody>
         </table>
       </div>
     </div>
@@ -587,6 +632,10 @@
       <div class="fg"><label>Place / Venue</label><input id="ePlace" type="text" placeholder="e.g. Auditorium A"/></div>
       <div class="fg"><label>Max Seats</label><input id="eSeats" type="number" placeholder="100"/></div>
     </div>
+    <div class="fg" style="margin-top: 10px;">
+      <label>Event Poster URL</label>
+      <input id="eImage" type="text" placeholder="e.g. https://images.unsplash.com/..."/>
+    </div>
     <div class="modal-btns">
       <button class="btn-ghost" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" onclick="addEvent()">Create Event</button>
@@ -602,9 +651,39 @@
     try {
       // Decode JWT to check role
       const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.role !== 'admin') {
-        alert("Access Denied: Admins only.");
+      if (payload.role !== 'admin' && payload.role !== 'organiser') {
+        alert("Access Denied.");
         window.location.href = 'student_dashboard.html';
+      }
+      
+      // Personalize for Organiser
+      if (payload.role === 'organiser') {
+          const title = document.querySelector('.topbar-left h1');
+          if (title) title.innerText = 'Organiser Dashboard';
+          const roleLabel = document.querySelector('.user-role');
+          if (roleLabel) roleLabel.innerText = payload.department + ' Organiser';
+          const nameLabel = document.querySelector('.user-name');
+          if (nameLabel) nameLabel.innerText = 'Staff';
+          const logoRole = document.querySelector('.sidebar-logo p');
+          if (logoRole) logoRole.innerText = payload.department + ' Dept';
+          const initials = document.querySelector('.user-avatar');
+          if (initials) initials.innerText = 'OR';
+
+          // Inject Browse Events link for Organiser
+          const nav = document.querySelector('aside.sidebar nav');
+          if (nav) {
+              const browseLink = document.createElement('a');
+              browseLink.href = 'register-event.html';
+              browseLink.className = 'nav-link';
+              browseLink.innerHTML = '<span class="icon">🔍</span> Browse Events';
+              // Insert before college-events.html link (which has 'Events' text)
+              const eventsLink = Array.from(nav.querySelectorAll('.nav-link')).find(l => l.getAttribute('href') === 'college-events.html');
+              if (eventsLink) {
+                  nav.insertBefore(browseLink, eventsLink); 
+              } else {
+                  nav.appendChild(browseLink);
+              }
+          }
       }
     } catch (e) {
       localStorage.removeItem('cems_token');
@@ -700,10 +779,10 @@
         datasets: [{
           label: 'Registrations',
           data: last6Data,
-          borderColor: '#808000',
-        backgroundColor: 'rgba(128,128,0,0.07)',
+          borderColor: '#f06292',
+        backgroundColor: 'rgba(240,98,146,0.1)',
         borderWidth: 2.5, fill: true, tension: 0.4,
-        pointBackgroundColor: '#808000', pointRadius: 4,
+        pointBackgroundColor: '#f06292', pointRadius: 4,
         }]
       },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
@@ -725,7 +804,7 @@
         labels: dLabels.length ? dLabels : ['No Events'],
         datasets: [{
           data: dData.length ? dData : [1],
-          backgroundColor: ['#808000','#f59e0b','#556b2f','#ef4444','#8b5cf6', '#3b82f6'],
+          backgroundColor: ['#f06292', '#ec407a', '#d81b60', '#ad1457', '#880e4f', '#f48fb1'],
           borderWidth: 2, borderColor: '#fff', hoverOffset: 6,
         }]
       },
@@ -746,7 +825,7 @@
         datasets: [{
           label: 'Student Registrations',
           data: bData.length ? bData : [0],
-          backgroundColor: '#808000',
+          backgroundColor: '#f06292',
           borderRadius: 6
         }]
       },
@@ -762,7 +841,7 @@
         labels: ['Open Events', 'Closed/Completed'],
         datasets: [{
           data: [openCount, closedCount],
-          backgroundColor: ['#808000', '#556b2f']
+          backgroundColor: ['#f06292', '#fce4ec']
         }]
       },
       options: { responsive: true, maintainAspectRatio: false }
@@ -793,12 +872,17 @@
                 regs.forEach(r => {
                     const name = r.name || 'Anonymous';
                     const time = r.registrationDate ? new Date(r.registrationDate).toLocaleDateString() : 'N/A';
+                    const isVol = r.isVolunteer ? '✅ Yes' : '❌ No';
+                    const vRole = r.volunteerRole ? r.volunteerRole.charAt(0).toUpperCase() + r.volunteerRole.slice(1) : '-';
                     stb.innerHTML += `<tr>
                       <td><strong>${name}</strong></td>
                       <td>${r.collegeId || 'N/A'}</td>
+                      <td>${r.department || 'All'}</td>
                       <td><span class="badge b-blue">${r.event || 'Unknown'}</span></td>
                       <td>${r.email || 'N/A'}</td>
                       <td>${r.phone || 'N/A'}</td>
+                      <td>${isVol}</td>
+                      <td>${vRole}</td>
                       <td>${time}</td>
                     </tr>`;
                 });
@@ -823,7 +907,41 @@
   async function initDashboard() {
     await fetchEvents();
     await fetchRegistrations(); 
+    if (JSON.parse(atob(token.split('.')[1])).role === 'admin') {
+        await fetchOrganisers();
+    }
   }
+
+  async function fetchOrganisers() {
+    try {
+        const res = await fetch('/api/debug/users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const users = await res.json();
+        const organisers = users.filter(u => u.role === 'organiser');
+        
+        const otb = document.getElementById('organisersTbody');
+        const oSection = document.getElementById('organisersSection');
+        
+        if (otb && oSection) {
+            otb.innerHTML = '';
+            if (organisers.length > 0) {
+                oSection.style.display = 'block';
+                organisers.forEach(o => {
+                    otb.innerHTML += `<tr>
+                      <td><strong>Staff</strong></td>
+                      <td>${o.department || 'Not Assigned'}</td>
+                      <td>${o.email}</td>
+                      <td>${o.role.charAt(0).toUpperCase() + o.role.slice(1)}</td>
+                    </tr>`;
+                });
+            }
+        }
+    } catch (err) {
+        console.error('Error fetching organisers:', err);
+    }
+  }
+
   initDashboard();
   
   // Real-time updates: refresh dashboard data every 10 seconds
@@ -847,6 +965,7 @@
     const endTime = document.getElementById('eEndTime').value;
     const place = document.getElementById('ePlace').value.trim();
     const maxSeats = document.getElementById('eSeats').value;
+    const image = document.getElementById('eImage').value.trim();
 
     if (!name || !date || !startTime || !endTime || !place) { 
       errorDiv.style.display = 'block';
@@ -868,7 +987,7 @@
                 'Authorization': `Bearer ${token}` 
             },
             body: JSON.stringify({ 
-                name, date, department, startTime, endTime, place, maxSeats, 
+                name, date, department, startTime, endTime, place, maxSeats, image,
                 status: 'open', isVisibleToStudents: true 
             })
         });
@@ -883,6 +1002,7 @@
             document.getElementById('eEndTime').value = '';
             document.getElementById('ePlace').value = '';
             document.getElementById('eSeats').value = '';
+            document.getElementById('eImage').value = '';
         } else {
             const data = await res.json();
             errorDiv.style.display = 'block';

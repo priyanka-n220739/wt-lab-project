@@ -8,12 +8,20 @@
 <script>
 function toggleCollegeId() {
     const role = document.getElementById('role').value;
-    const box = document.getElementById('collegeIdBox');
+    const cidBox = document.getElementById('collegeIdBox');
+    const deptBox = document.getElementById('deptBox');
+    
     if (role === 'admin') {
-        box.style.display = 'none';
+        cidBox.style.display = 'none';
+        deptBox.style.display = 'none';
+        document.getElementById('collegeId').removeAttribute('required');
+    } else if (role === 'organiser') {
+        cidBox.style.display = 'none';
+        deptBox.style.display = 'block';
         document.getElementById('collegeId').removeAttribute('required');
     } else {
-        box.style.display = 'block';
+        cidBox.style.display = 'block';
+        deptBox.style.display = 'none';
         document.getElementById('collegeId').setAttribute('required', 'required');
     }
 }
@@ -30,6 +38,8 @@ async function registersuccess() {
     // only for student
     if (role === "student") {
         bodyData.collegeId = document.getElementById('collegeId').value;
+    } else if (role === "organiser") {
+        bodyData.department = document.getElementById('department').value;
     }
 
     const response = await fetch('/api/auth/register', {
@@ -63,7 +73,7 @@ height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-background:url("https://www.shutterstock.com/image-photo/blurred-background-vibrant-scene-showcasing-600nw-2577243207.jpg");
+background:url("https://www.pixelstalk.net/wp-content/uploads/2016/10/Download-Blue-And-Pink-Images.jpg");
 background-size:cover;
 }
 
@@ -138,13 +148,13 @@ transition:0.3s;
 .input-box input:valid + label{
 top:-10px;
 font-size:12px;
-color:#808000;
+color:#f06292;
 }
 
 /* glow effect */
 
 .input-box input:focus{
-box-shadow:0 0 10px #808000;
+box-shadow:0 0 10px #f06292;
 }
 
 /* button */
@@ -154,14 +164,15 @@ width:100%;
 padding:12px;
 border:none;
 border-radius:6px;
-background:#808000;
-color:black;
+background:#f06292;
+color:white;
 font-weight:bold;
 cursor:pointer;
 transition:0.3s;
 }
 
 button:hover{
+background:#d81b60;
 transform:scale(1.05);
 }
 
@@ -208,6 +219,22 @@ font-size:15px;
     <option value="" disabled selected>Select Role</option>
     <option value="student">Student</option>
     <option value="admin">Admin</option>
+    <option value="organiser">Organiser</option>
+</select>
+</div>
+
+<div class="input-box" id="deptBox" style="display: none;">
+<label style="position: static; display: block; font-size: 14px; margin-bottom: 5px; color: white;">Assigned Department</label>
+<select id="department" style="width:100%; padding:12px; border:none; outline:none; border-radius:5px; background:rgba(255,255,255,0.2); color:white; font-size:15px;">
+    <option value="CSE">CSE</option>
+    <option value="ECE">ECE</option>
+    <option value="MBA">MBA</option>
+    <option value="Civil">Civil</option>
+    <option value="Mechanical">Mechanical</option>
+    <option value="Cultural">Cultural</option>
+    <option value="Technical">Technical</option>
+    <option value="Sports">Sports</option>
+    <option value="Literary">Literary</option>
 </select>
 </div>
 

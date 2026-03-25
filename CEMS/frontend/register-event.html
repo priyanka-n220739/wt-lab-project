@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="css/home.css">
 <style>
 /* Navbar */
-.navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 40px; background:#808000; color:white; font-family: sans-serif; }
+.navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 40px; background:#f06292; color:white; font-family: sans-serif; }
 .logo { font-size:22px; font-weight:bold; }
 .nav-links { list-style:none; display:flex; gap:25px; margin: 0; padding: 0; }
 .nav-links a { color:white; text-decoration:none; font-size:16px; }
@@ -15,7 +15,7 @@
 
 /* Heading */
 .heading { text-align:center; margin-top:40px; margin-bottom:10px; font-family: sans-serif; }
-.heading h1 { font-size:40px; font-weight:bold; background: linear-gradient(90deg,#808000,#bab86c); -webkit-background-clip:text; background-clip: text; color:transparent; margin: 0; }
+.heading h1 { font-size:40px; font-weight:bold; background: linear-gradient(90deg,#f06292,#f48fb1); -webkit-background-clip:text; background-clip: text; color:transparent; margin: 0; }
 .heading p { color: #666; font-size: 16px; margin-top: 10px; }
 
 /* Events Grid */
@@ -39,12 +39,12 @@
 }
 .event-card-header { padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
 .event-title { font-size: 1.3rem; font-weight: bold; color: #2d3a4a; margin-top: 10px; margin-bottom: 0;}
-.event-badge { display: inline-block; padding: 5px 12px; background: #f5f5dc; color: #808000; font-size: 0.75rem; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.event-badge { display: inline-block; padding: 5px 12px; background: #fce4ec; color: #f06292; font-size: 0.75rem; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 .event-details { margin-bottom: 20px; flex-grow: 1; }
 .detail-item { display: flex; align-items: center; margin-bottom: 12px; color: #6b7a90; font-size: 0.9rem; }
-.detail-item i { width: 25px; color: #808000; font-size: 1.1rem; }
-.btn-register-card { width: 100%; padding: 12px; background: #808000; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit;}
-.btn-register-card:hover { background: #556b2f; }
+.detail-item i { width: 25px; color: #f06292; font-size: 1.1rem; }
+.btn-register-card { width: 100%; padding: 12px; background: #f06292; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit;}
+.btn-register-card:hover { background: #d81b60; }
 
 /* Modal Styles */
 .modal-overlay {
@@ -69,11 +69,11 @@
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 0.85rem;}
 .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; outline:none; transition: border 0.2s;}
-.form-group input:focus, .form-group select:focus { border-color: #808000; }
-.btn-submit { width: 100%; background: #808000; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: background 0.2s; font-family: inherit;}
-.btn-submit:hover { background: #556b2f; }
+.form-group input:focus, .form-group select:focus { border-color: #f06292; }
+.btn-submit { width: 100%; background: #f06292; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: background 0.2s; font-family: inherit;}
+.btn-submit:hover { background: #d81b60; }
 
-.success { display:none; text-align:center; background:#f5f5dc; color:#556b2f; padding:15px; border-radius:6px; margin-top:20px; font-weight:600; font-size: 0.95rem; border: 1px solid #808000; }
+.success { display:none; text-align:center; background:#fce4ec; color:#ad1457; padding:15px; border-radius:6px; margin-top:20px; font-weight:600; font-size: 0.95rem; border: 1px solid #f06292; }
 </style>
 </head>
 <body style="background:#f4f7fb; margin:0;">
@@ -131,12 +131,24 @@
                 <label>Department</label>
                 <select id="department" required>
                     <option value="" disabled selected>Select Department</option>
-                    <option>CSE</option>
-                    <option>ECE</option>
-                    <option>Mechanical</option>
-                    <option>Civil</option>
-                    <option>IT</option>
-                    <option>MBA</option>
+                    <option>CSE</option><option>ECE</option><option>Mechanical</option><option>Civil</option><option>IT</option><option>MBA</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin: 15px 0;">
+                <input type="checkbox" id="isVolunteer" style="width: auto;">
+                <label for="isVolunteer" style="margin-bottom: 0;">Register as a Volunteer?</label>
+            </div>
+
+            <div id="volunteerRoleGroup" style="display: none; margin-bottom: 15px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 0.85rem;">Select Area for Volunteering</label>
+                <select id="volunteerRole" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 0.95rem; outline:none;">
+                    <option value="" disabled selected>Choose role...</option>
+                    <option value="hospitality">Hospitality</option>
+                    <option value="craft">Craft & Decoration</option>
+                    <option value="disciplinary">Disciplinary</option>
+                    <option value="technical">Technical Support</option>
+                    <option value="other">Other</option>
                 </select>
             </div>
 
@@ -169,27 +181,42 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-            events.forEach(ev => {
-                const dateStr = new Date(ev.date).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' });
-                const timeStr = (ev.startTime && ev.endTime) ? `${ev.startTime} - ${ev.endTime}` : 'TBA';
-                
-                const card = document.createElement("div");
-                card.className = "event-card";
-                card.innerHTML = `
-                    <div class="event-card-header">
-                        <div class="event-badge">${ev.department}</div>
-                        <h3 class="event-title">${ev.name}</h3>
-                    </div>
-                    <div class="event-details">
-                        <div class="detail-item"><i class="fas fa-calendar-check"></i> <span>${dateStr}</span></div>
-                        <div class="detail-item"><i class="fas fa-clock"></i> <span>${timeStr}</span></div>
-                        <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.place || ev.venue || 'TBA'}</span></div>
-                        <div class="detail-item"><i class="fas fa-users"></i> <span>Seats: ${ev.maxSeats || 'Unlimited'}</span></div>
-                    </div>
-                    <button class="btn-register-card" onclick="openModal('${ev.name.replace(/'/g, "\\'")}', '${ev._id}')">Register Now</button>
-                `;
-                grid.appendChild(card);
+        let role = 'student';
+        if (token) {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            role = payload.role;
+        }
+
+        events.forEach(ev => {
+            const dateStr = new Date(ev.date).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' });
+            const timeStr = (ev.startTime && ev.endTime) ? `${ev.startTime} - ${ev.endTime}` : 'TBA';
+            
+            const card = document.createElement("div");
+            card.className = "event-card";
+            card.innerHTML = `
+                <div class="event-card-header">
+                    <div class="event-badge">${ev.department}</div>
+                    <h3 class="event-title">${ev.name}</h3>
+                </div>
+                <div class="event-details">
+                    <div class="detail-item"><i class="fas fa-calendar-check"></i> <span>${dateStr}</span></div>
+                    <div class="detail-item"><i class="fas fa-clock"></i> <span>${timeStr}</span></div>
+                    <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.place || ev.venue || 'TBA'}</span></div>
+                    <div class="detail-item"><i class="fas fa-users"></i> <span>Seats: ${ev.maxSeats || 'Unlimited'}</span></div>
+                </div>
+                ${role === 'student' ? `<button class="btn-register-card" onclick="openModal('${ev.name.replace(/'/g, "\\'")}', '${ev._id}')">Register Now</button>` : ''}
+            `;
+            grid.appendChild(card);
+        });
+
+        // Add toggle for volunteer role visibility
+        const isVolunteerCheckbox = document.getElementById("isVolunteer");
+        const volunteerRoleGroup = document.getElementById("volunteerRoleGroup");
+        if (isVolunteerCheckbox && volunteerRoleGroup) {
+            isVolunteerCheckbox.addEventListener("change", function() {
+                volunteerRoleGroup.style.display = this.checked ? "block" : "none";
             });
+        }
 
     } catch (err) {
         console.error("Failed to load events", err);
@@ -232,6 +259,13 @@ document.getElementById("eventForm").addEventListener("submit", async function(e
     let department = document.getElementById("department").value;
     let event = document.getElementById("eventTargetName").value;
     let eventId = document.getElementById("eventTargetId").value;
+    let isVolunteer = document.getElementById("isVolunteer").checked;
+    let volunteerRole = isVolunteer ? document.getElementById("volunteerRole").value : null;
+
+    if (isVolunteer && !volunteerRole) {
+        alert("Please select a volunteer role!");
+        return;
+    }
 
     try {
         const response = await fetch('/api/events/register', {
@@ -240,7 +274,7 @@ document.getElementById("eventForm").addEventListener("submit", async function(e
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ name, email, phone, department, event, eventId })
+            body: JSON.stringify({ name, email, phone, department, event, eventId, isVolunteer, volunteerRole })
         });
 
         const data = await response.json();

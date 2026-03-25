@@ -23,7 +23,7 @@ function handleDashboardClick(e) {
         return;
     }
     const role = JSON.parse(atob(token.split('.')[1])).role;
-    if (role === 'admin') {
+    if (role === 'admin' || role === 'organiser') {
         window.location.href = 'admin_dashboard.html';
     } else {
         window.location.href = 'student_dashboard.html';
@@ -33,28 +33,71 @@ function handleDashboardClick(e) {
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('cems_token');
     if (token) {
-        const role = JSON.parse(atob(token.split('.')[1])).role;
-        if (role === 'admin') {
-            const buttons = document.querySelectorAll('.card .btn');
-            buttons.forEach(btn => {
-                const cardTitle = btn.closest('.card').querySelector('h2').innerText;
-                btn.innerHTML = `<i class="fas fa-edit"></i> Manage ${cardTitle}`;
-                btn.classList.add('admin-btn');
-                btn.style.backgroundColor = '#808000';
-                btn.style.color = 'white';
-                btn.style.width = '100%';
-                btn.style.border = 'none';
-                btn.style.padding = '12px';
-                btn.style.borderRadius = '8px';
-                btn.style.marginTop = '10px';
-                btn.style.fontSize = '1rem';
-                btn.style.fontWeight = 'bold';
-            });
-        }
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.role;
     }
 });
+
+async function fetchUpcomingEvents(role) {
+    const token = localStorage.getItem('cems_token');
+    try {
+        const res = await fetch('/api/events', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const events = await res.json();
+        const ticker = document.getElementById('ticker');
+        
+        // Filter for upcoming (open) events
+        const upcoming = events.filter(e => e.status === 'open' || e.status === 'upcoming');
+        
+        if (upcoming.length > 0) {
+            ticker.innerHTML = upcoming.map(e => `<span>🚀 Upcoming: ${e.name} (${e.department}) on ${new Date(e.date).toLocaleDateString()} at ${e.place}</span>`).join('');
+        } else {
+            ticker.innerHTML = '<span>No new upcoming events for your department.</span>';
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function submitEvent() {
+    const errorDiv = document.getElementById('modalError');
+    errorDiv.style.display = 'none';
+    const token = localStorage.getItem('cems_token');
+    const name = document.getElementById('eName').value.trim();
+    const date = document.getElementById('eDate').value;
+    const dept = JSON.parse(atob(token.split('.')[1])).department;
+    const startTime = document.getElementById('eStartTime').value;
+    const endTime = document.getElementById('eEndTime').value;
+    const place = document.getElementById('ePlace').value.trim();
+
+    if (!name || !date || !startTime || !endTime || !place) { 
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = 'Please fill all required fields.';
+        return; 
+    }
+
+    try {
+        const res = await fetch('/api/events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ name, date, department: dept, startTime, endTime, place, status: 'open' })
+        });
+        if (res.ok) {
+            closeModal();
+            ['eName','eDate','eStartTime','eEndTime','ePlace'].forEach(id => document.getElementById(id).value = '');
+        } else {
+            const data = await res.json();
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = data.message || 'Error creating event';
+        }
+    } catch (err) { console.error(err); }
+}
 </script>
 
+<style>
+
+</style>
 </head>
 <body>
     <div class="hero-section">
@@ -73,26 +116,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         </nav>
 
+
+
         <main class="content">
-
-            <div class="card">
-                <div class="card-image-wrapper">
-                    <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80" alt="College Fest">
-                    <div class="image-label">COLLEGE EVENTS</div>
+        <main class="content">
+            <div class="card-row" style="display: flex; gap: 30px; justify-content: center; width: 100%; flex-wrap: wrap;">
+                <div class="card">
+                    <div class="card-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80" alt="College Fest">
+                        <div class="image-label">COLLEGE EVENTS</div>
+                    </div>
+                    <h2>College Events</h2>
+                    <p>Discover and participate in major university-wide events, festivals, cultural meets, and grand celebrations on campus.</p>
+                    <a href="college-events.html" id="collegeEventsLink"><button class="btn">Explore College Events</button></a>
                 </div>
-
-                <h2>College Events</h2>
-
-                <p>
-                    Discover and participate in major university-wide events, festivals, cultural meets,
-                    and grand celebrations on campus.
-                </p>
-
-                <a href="college-events.html">
-                <button class="btn">Explore College Events</button>
-                </a>
-
-            </div>
 
 
             <div class="card">
@@ -109,14 +146,70 @@ document.addEventListener('DOMContentLoaded', () => {
                     guest lectures, and competitions organized by individual departments.
                 </p>
 
-                <a href="events.html">
+                <a href="events.html" id="deptEventsLink">
                 <button class="btn">Explore Departmental Events</button>
                 </a>
 
-            </div>
+            </div> <!-- end of cards -->
+        </div> <!-- end of card-row -->
 
         </main>
 
+
+<!-- ADD EVENT MODAL -->
+<div class="overlay" id="overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;" onclick="outsideClose(event)">
+  <div style="background: white; padding: 30px; border-radius: 12px; width: 450px; max-width: 90vw;">
+    <h2 style="color: #f06292; margin-bottom: 20px;">➕ Add New Event</h2>
+    <div id="modalError" style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; display: none;"></div>
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">Event Name</label>
+      <input id="eName" type="text" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"/>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div><label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">Date</label><input id="eDate" type="date" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"/></div>
+      <div>
+        <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">Department</label>
+        <input id="displayDept" type="text" readonly style="width:100%; padding:10px; border:1px solid #ddd; background:#f9f9f9; border-radius:6px;"/>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+        <div><label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">Start Time</label><input id="eStartTime" type="time" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"/></div>
+        <div><label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">End Time</label><input id="eEndTime" type="time" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"/></div>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <label style="display:block; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">Venue</label>
+        <input id="ePlace" type="text" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"/>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button class="btn" style="background:#eee; color:black; width:auto; padding:8px 20px;" onclick="closeModal()">Cancel</button>
+      <button class="btn" style="width:auto; padding:8px 20px;" onclick="submitEvent()">Create</button>
+    </div>
+  </div>
+</div>
+
+<style>
+    .overlay.open { display: flex !important; }
+</style>
+
+<script>
+    // Overriding toggle functionality for Add Modal
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('cems_token');
+        if (token) {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.role === 'organiser') {
+                const displayDept = document.getElementById('displayDept');
+                if (displayDept) displayDept.value = payload.department;
+
+                // Redirect organisers to Browse Events page for both card types
+                const collegeLink = document.getElementById('collegeEventsLink');
+                const deptLink = document.getElementById('deptEventsLink');
+                if (collegeLink) collegeLink.href = 'register-event.html';
+                if (deptLink) deptLink.href = 'register-event.html';
+            }
+        }
+    });
+</script>
 
         <footer class="footer">
     <div class="footer-container">

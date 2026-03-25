@@ -29,23 +29,23 @@
         z-index: 50;
     }
     .sidebar-logo { padding: 22px 20px; border-bottom: 1px solid #e8ecf4; }
-    .sidebar-logo h2 { font-size: 1.1rem; font-weight: 700; color: #808000; }
-    .sidebar-logo.student-mode h2 { color: #808000; }
+    .sidebar-logo h2 { font-size: 1.1rem; font-weight: 700; color: #f06292; }
+    .sidebar-logo.student-mode h2 { color: #f06292; }
     .sidebar-logo p { font-size: 0.7rem; color: #9aa3b2; margin-top: 2px; }
     .sidebar nav { padding: 14px 12px; flex: 1; }
     .nav-section { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #b0b9c8; padding: 10px 10px 4px; }
     .nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 0.86rem; color: #6b7a90; text-decoration: none; margin-bottom: 2px; transition: all 0.15s; font-weight: 500; }
     
-    .nav-link:hover { background: #f5f5dc; color: #808000; }
-    .nav-link.active { background: #fdfde0; color: #808000; font-weight: 600; }
+    .nav-link:hover { background: #fce4ec; color: #f06292; }
+    .nav-link.active { background: #fdf2f5; color: #d81b60; font-weight: 600; }
     
-    .student-mode .nav-link:hover { background: #f5f5dc; color: #808000; }
-    .student-mode .nav-link.active { background: #fdfde0; color: #556b2f; }
+    .student-mode .nav-link:hover { background: #fce4ec; color: #f06292; }
+    .student-mode .nav-link.active { background: #fdf2f5; color: #ad1457; }
     
     .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
     .sidebar-footer { padding: 14px 16px; border-top: 1px solid #e8ecf4; display: flex; align-items: center; gap: 10px; }
-    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: #808000; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
-    .student-mode .user-avatar { background: #808000; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: #f06292; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
+    .student-mode .user-avatar { background: #f06292; }
     .user-name { font-size: 0.82rem; font-weight: 600; }
     .user-role { font-size: 0.7rem; color: #9aa3b2; }
 
@@ -58,8 +58,8 @@
         overflow-y: auto;
     }
     .topbar {
-        background: #808000;
-        border-bottom: 1px solid #556b2f;
+        background: #f06292;
+        border-bottom: 1px solid #d81b60;
         color: #fff;
         padding: 14px 28px;
         display: flex;
@@ -115,8 +115,8 @@
         font-family: inherit; font-size: 0.9rem; color: #111827;
         transition: border-color 0.2s; outline: none;
     }
-    .form-control:focus { border-color: #808000; box-shadow: 0 0 0 3px rgba(128,128,0,0.1); }
-    .student-mode .form-control:focus { border-color: #808000; box-shadow: 0 0 0 3px rgba(128,128,0,0.1); }
+    .form-control:focus { border-color: #f06292; box-shadow: 0 0 0 3px rgba(240,98,146,0.1); }
+    .student-mode .form-control:focus { border-color: #f06292; box-shadow: 0 0 0 3px rgba(240,98,146,0.1); }
 
     .form-actions {
         display: flex; justify-content: flex-end; gap: 12px;
@@ -124,13 +124,13 @@
         border-top: 1px solid #f3f4f6;
     }
     .btn-primary {
-        background: #808000; color: white;
+        background: #f06292; color: white;
         padding: 9px 20px; border-radius: 8px;
         font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; transition: 0.2s;
     }
-    .btn-primary:hover { background: #556b2f; }
-    .student-mode .btn-primary { background: #808000; }
-    .student-mode .btn-primary:hover { background: #556b2f; }
+    .btn-primary:hover { background: #d81b60; }
+    .student-mode .btn-primary { background: #f06292; }
+    .student-mode .btn-primary:hover { background: #d81b60; }
 
     @media (max-width: 768px) {
         .sidebar { display: none; }
@@ -163,7 +163,7 @@
 
             <div class="profile-header">
                 <div>
-                    <img id="profilePreview" class="profile-avatar-large" src="https://ui-avatars.com/api/?name=User&background=808000&color=fff&size=200" alt="Avatar">
+                    <img id="profilePreview" class="profile-avatar-large" src="https://ui-avatars.com/api/?name=User&background=f06292&color=fff&size=200" alt="Avatar">
                 </div>
                 <div>
                     <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 3px;" id="displayName">Active User</h3>
@@ -279,10 +279,40 @@ function renderSidebar() {
         `;
         document.getElementById('roleTitle').innerText = "Admin Settings";
         document.getElementById('displayName').innerText = "Administrator Account";
+    } else if (role === 'organiser') {
+        container.innerHTML = `
+        <aside class="sidebar">
+          <div class="sidebar-logo">
+            <h2>🎓 EduEvents</h2>
+            <p>Organiser Control Panel</p>
+          </div>
+          <nav>
+            <div class="nav-section">Main Menu</div>
+            <a href="admin_dashboard.html" class="nav-link"><span class="icon">🏠</span> Dashboard</a>
+            <a href="register-event.html" class="nav-link"><span class="icon">🔍</span> Browse Events</a>
+            <a href="college-events.html" class="nav-link"><span class="icon">📅</span> Events</a>
+            <a href="admin_dashboard.html#registrationsSection" class="nav-link"><span class="icon">📋</span> Registrations</a>
+            <div class="nav-section">Manage</div>
+            <a href="events.html" class="nav-link"><span class="icon">🏛️</span> Departments</a>
+            <div class="nav-section">Account</div>
+            <a href="settings.html" class="nav-link active"><span class="icon">⚙️</span> Settings</a>
+            <a href="#" class="nav-link" onclick="logout()"><span class="icon">🚪</span> Logout</a>
+          </nav>
+          <div class="sidebar-footer">
+            <div class="user-avatar">OR</div>
+            <div>
+              <div class="user-name">Organiser</div>
+              <div class="user-role">Event Staff</div>
+            </div>
+          </div>
+        </aside>
+        `;
+        document.getElementById('roleTitle').innerText = "Event Organiser Settings";
+        document.getElementById('displayName').innerText = "Organiser Account";
     } else {
         document.body.classList.add('student-mode');
         document.getElementById('mainContentWrapper').classList.add('student-mode');
-        document.getElementById('profilePreview').src = "https://ui-avatars.com/api/?name=St&background=10b981&color=fff&size=200";
+        document.getElementById('profilePreview').src = "https://ui-avatars.com/api/?name=St&background=f06292&color=fff&size=200";
         
         container.innerHTML = `
         <aside class="sidebar student-mode">
@@ -337,7 +367,7 @@ function saveSettings(btn) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving';
     setTimeout(() => {
         btn.innerHTML = '<i class="fas fa-check"></i> Applied';
-        const okColor = role === 'admin' ? '#808000' : '#556b2f';
+        const okColor = role === 'admin' ? '#f06292' : '#d81b60';
         btn.style.background = okColor;
         
         setTimeout(() => {
