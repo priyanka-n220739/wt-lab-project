@@ -104,7 +104,7 @@ const DEMO_MODE = false;
 // Register User
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { role, collegeId, email, password, department } = req.body;
+    const { role, collegeId, email, password, department, name, isCR } = req.body;
 
     // basic validation
     if (!email || !password || !role) {
@@ -133,11 +133,13 @@ app.post('/api/auth/register', async (req, res) => {
 
     // create user
     const newUser = new User({
+      name: name || 'User',
       role,
       email,
       password: hashedPassword,
       collegeId: (role === 'admin' || role === 'organiser') ? null : collegeId,
-      department: role === 'organiser' ? department : null
+      department: (role === 'organiser' || (role === 'student' && department)) ? department : null,
+      isCR: isCR || false
     });
 
     await newUser.save();
@@ -497,7 +499,7 @@ app.get('/api/user/registrations', authMiddleware, async (req, res) => {
     }
 });
 
-// DEBUG: Get all users (remove in production)
+// ADMIN: Get all users (remove in production)
 app.get('/api/debug/users', async (req, res) => {
   try {
     const users = await User.find().select('-password');
@@ -505,6 +507,20 @@ app.get('/api/debug/users', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error fetching users' });
   }
+});
+
+// STAFF: Get CRs from their specific department
+app.get('/api/department/crs', authMiddleware, staffMiddleware, async (req, res) => {
+    try {
+        let query = { role: 'student', isCR: true };
+        if (req.user.role === 'organiser') {
+            query.department = req.user.department;
+        }
+        const crs = await User.find(query).select('name email department collegeId');
+        res.json(crs);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching CRs' });
+    }
 });
 
 app.use((req, res) => {
