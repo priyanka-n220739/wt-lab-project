@@ -559,10 +559,10 @@
       </div>
     </div>
 
-    <!-- NEW SECTION: ORGANISERS CONTACT DETAILS -->
-    <div class="card" id="organisersSection" style="margin-bottom: 40px; display: none;">
+    <!-- SECTION: ORGANISERS CONTACT DETAILS (Admin Only) -->
+    <div class="card" id="organisersSection" style="margin-bottom: 22px; display: none;">
       <div class="card-head">
-        <h3>📞 Organisers Contact Details</h3>
+        <h3>📞 Event Organisers Contact Details</h3>
       </div>
       <div style="overflow-x: auto;">
         <table class="tbl">
@@ -575,6 +575,26 @@
             </tr>
           </thead>
           <tbody id="organisersTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION: DEPARTMENT CRs / STUDENT LEADERS (Organiser Only) -->
+    <div class="card" id="crsSection" style="margin-bottom: 22px; display: none;">
+      <div class="card-head">
+        <h3>🎓 Department Class Representatives (CRs)</h3>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>CR Name</th>
+              <th>College ID</th>
+              <th>Department</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody id="crsTbody"></tbody>
         </table>
       </div>
     </div>
@@ -907,8 +927,11 @@
   async function initDashboard() {
     await fetchEvents();
     await fetchRegistrations(); 
-    if (JSON.parse(atob(token.split('.')[1])).role === 'admin') {
+    const role = JSON.parse(atob(token.split('.')[1])).role;
+    if (role === 'admin') {
         await fetchOrganisers();
+    } else if (role === 'organiser') {
+        await fetchCRs();
     }
   }
 
@@ -929,7 +952,7 @@
                 oSection.style.display = 'block';
                 organisers.forEach(o => {
                     otb.innerHTML += `<tr>
-                      <td><strong>Staff</strong></td>
+                      <td><strong>${o.name || 'Staff'}</strong></td>
                       <td>${o.department || 'Not Assigned'}</td>
                       <td>${o.email}</td>
                       <td>${o.role.charAt(0).toUpperCase() + o.role.slice(1)}</td>
@@ -939,6 +962,35 @@
         }
     } catch (err) {
         console.error('Error fetching organisers:', err);
+    }
+  }
+
+  async function fetchCRs() {
+    try {
+        const res = await fetch('/api/department/crs', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const crs = await res.json();
+        
+        const ctb = document.getElementById('crsTbody');
+        const cSection = document.getElementById('crsSection');
+        
+        if (ctb && cSection) {
+            ctb.innerHTML = '';
+            if (crs.length > 0) {
+                cSection.style.display = 'block';
+                crs.forEach(c => {
+                    ctb.innerHTML += `<tr>
+                      <td><strong>${c.name || 'Student'}</strong></td>
+                      <td>${c.collegeId || 'N/A'}</td>
+                      <td>${c.department || 'My Dept'}</td>
+                      <td>${c.email}</td>
+                    </tr>`;
+                });
+            }
+        }
+    } catch (err) {
+        console.error('Error fetching CRs:', err);
     }
   }
 

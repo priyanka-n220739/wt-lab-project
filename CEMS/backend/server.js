@@ -16,8 +16,8 @@ const cron = require('node-cron');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI ;
-const JWT_SECRET = process.env.JWT_SECRET ;
+const MONGO_URI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware
 app.use(cors());
@@ -48,8 +48,8 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (to, subject, text, html) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.log('Email configuration missing in .env. Skipping email send for:', to);
-      return;
+    console.log('Email configuration missing in .env. Skipping email send for:', to);
+    return;
   }
   try {
     await transporter.sendMail({
@@ -95,9 +95,9 @@ const staffMiddleware = (req, res, next) => {
   next();
 };
 
- 
+
 // AUTHENTICATION ROUTES
- 
+
 // Demo Mode Toggle (Set to true to skip DB check)
 const DEMO_MODE = false;
 
@@ -113,7 +113,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     // organiser needs department
     if (role === 'organiser' && !department) {
-        return res.status(400).json({ message: 'Department is required for organisers' });
+      return res.status(400).json({ message: 'Department is required for organisers' });
     }
 
     //  only student needs collegeId
@@ -203,19 +203,19 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
- 
+
 // EVENT APIs
- 
+
 // Helper to check for event conflicts (same time and place)
 const checkConflict = async (date, startTime, endTime, place, excludeId = null) => {
   const eventDate = new Date(date);
   const startOfDay = new Date(eventDate);
-  startOfDay.setUTCHours(0,0,0,0);
+  startOfDay.setUTCHours(0, 0, 0, 0);
   const endOfDay = new Date(eventDate);
-  endOfDay.setUTCHours(23,59,59,999);
+  endOfDay.setUTCHours(23, 59, 59, 999);
 
   const escapedPlace = place.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  
+
   const query = {
     date: { $gte: startOfDay, $lte: endOfDay },
     place: { $regex: new RegExp(`^${escapedPlace}$`, "i") }
@@ -228,13 +228,13 @@ const checkConflict = async (date, startTime, endTime, place, excludeId = null) 
   const existingAtPlace = await Event.find(query);
 
   for (const conf of existingAtPlace) {
-      const cStart = conf.startTime || "00:00";
-      const cEnd = conf.endTime || "23:59";
-      
-      // Overlap logic: (NewStart < ExistEnd) && (NewEnd > ExistStart)
-      if ((startTime < cEnd) && (endTime > cStart)) {
-          return conf;
-      }
+    const cStart = conf.startTime || "00:00";
+    const cEnd = conf.endTime || "23:59";
+
+    // Overlap logic: (NewStart < ExistEnd) && (NewEnd > ExistStart)
+    if ((startTime < cEnd) && (endTime > cStart)) {
+      return conf;
+    }
   }
   return null;
 };
@@ -243,7 +243,7 @@ const checkConflict = async (date, startTime, endTime, place, excludeId = null) 
 app.post('/api/events', authMiddleware, staffMiddleware, async (req, res) => {
   try {
     const { name, date, department, startTime, endTime, place, maxSeats, image, status } = req.body;
-    
+
     if (!name || !date || !startTime || !endTime || !place) {
       return res.status(400).json({ message: 'Required event details (name, date, time, place) are mandatory.' });
     }
@@ -254,18 +254,18 @@ app.post('/api/events', authMiddleware, staffMiddleware, async (req, res) => {
 
     const conflict = await checkConflict(date, startTime, endTime, place);
     if (conflict) {
-      return res.status(400).json({ 
-        message: `Conflict: Another event (${conflict.name}) is already scheduled at ${place} between ${conflict.startTime} and ${conflict.endTime}.` 
+      return res.status(400).json({
+        message: `Conflict: Another event (${conflict.name}) is already scheduled at ${place} between ${conflict.startTime} and ${conflict.endTime}.`
       });
     }
 
     if (req.user.role === 'organiser' && department !== req.user.department && department !== 'All') {
-        return res.status(403).json({ message: `Organisers can only create events for their department (${req.user.department})` });
+      return res.status(403).json({ message: `Organisers can only create events for their department (${req.user.department})` });
     }
 
     const eventDate = new Date(date);
     const startOfDay = new Date(eventDate);
-    startOfDay.setUTCHours(0,0,0,0);
+    startOfDay.setUTCHours(0, 0, 0, 0);
 
     const newEvent = new Event({
       name, date: startOfDay, department, startTime, endTime, place, maxSeats, image, status: status || 'open'
@@ -284,7 +284,7 @@ app.get('/api/events', authMiddleware, staffMiddleware, async (req, res) => {
   try {
     const query = {};
     if (req.user.role === 'organiser') {
-        query.$or = [{ department: req.user.department }, { department: 'All' }];
+      query.$or = [{ department: req.user.department }, { department: 'All' }];
     }
     const events = await Event.find(query).sort({ date: 1 });
     res.json(events);
@@ -296,83 +296,83 @@ app.get('/api/events', authMiddleware, staffMiddleware, async (req, res) => {
 // ADMIN: Update Event
 // STAFF: Update Event
 app.put('/api/events/:id', authMiddleware, staffMiddleware, async (req, res) => {
-    try {
+  try {
+    const currentEvent = await Event.findById(req.params.id);
+    if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
+
+    // Organiser check
+    if (req.user.role === 'organiser' && currentEvent.department !== req.user.department) {
+      return res.status(403).json({ message: 'Access denied: Organisers can only manage their department events' });
+    }
+
+    const { date, startTime, endTime, place } = req.body;
+
+    // If we are updating timing or location, check for conflicts
+    if (date || startTime || endTime || place) {
+      // Fetch current event to fill missing fields for conflict check
       const currentEvent = await Event.findById(req.params.id);
       if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
 
-      // Organiser check
-      if (req.user.role === 'organiser' && currentEvent.department !== req.user.department) {
-          return res.status(403).json({ message: 'Access denied: Organisers can only manage their department events' });
+      const checkDate = date || currentEvent.date;
+      const checkStart = startTime || currentEvent.startTime;
+      const checkEnd = endTime || currentEvent.endTime;
+      const checkPlace = place || currentEvent.place;
+
+      if (checkStart >= checkEnd) {
+        return res.status(400).json({ message: 'End time must be strictly after start time.' });
       }
 
-      const { date, startTime, endTime, place } = req.body;
-
-      // If we are updating timing or location, check for conflicts
-      if (date || startTime || endTime || place) {
-        // Fetch current event to fill missing fields for conflict check
-        const currentEvent = await Event.findById(req.params.id);
-        if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
-
-        const checkDate = date || currentEvent.date;
-        const checkStart = startTime || currentEvent.startTime;
-        const checkEnd = endTime || currentEvent.endTime;
-        const checkPlace = place || currentEvent.place;
-
-        if (checkStart >= checkEnd) {
-          return res.status(400).json({ message: 'End time must be strictly after start time.' });
-        }
-
-        const conflict = await checkConflict(checkDate, checkStart, checkEnd, checkPlace, req.params.id);
-        if (conflict) {
-          return res.status(400).json({ 
-            message: `Conflict: Another event (${conflict.name}) is already scheduled at ${checkPlace} between ${conflict.startTime} and ${conflict.endTime}.` 
-          });
-        }
+      const conflict = await checkConflict(checkDate, checkStart, checkEnd, checkPlace, req.params.id);
+      if (conflict) {
+        return res.status(400).json({
+          message: `Conflict: Another event (${conflict.name}) is already scheduled at ${checkPlace} between ${conflict.startTime} and ${conflict.endTime}.`
+        });
       }
-
-      // If date is provided, normalize it
-      if (req.body.date) {
-        const d = new Date(req.body.date);
-        d.setUTCHours(0,0,0,0);
-        req.body.date = d;
-      }
-
-      const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
-      if (!updatedEvent) return res.status(404).json({ message: 'Event not found' });
-      res.json(updatedEvent);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Server error updating event', error: err.message });
     }
+
+    // If date is provided, normalize it
+    if (req.body.date) {
+      const d = new Date(req.body.date);
+      d.setUTCHours(0, 0, 0, 0);
+      req.body.date = d;
+    }
+
+    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedEvent) return res.status(404).json({ message: 'Event not found' });
+    res.json(updatedEvent);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error updating event', error: err.message });
+  }
 });
 
 // ADMIN: Delete Event
 // STAFF: Delete Event
 app.delete('/api/events/:id', authMiddleware, staffMiddleware, async (req, res) => {
-    try {
-      const currentEvent = await Event.findById(req.params.id);
-      if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
+  try {
+    const currentEvent = await Event.findById(req.params.id);
+    if (!currentEvent) return res.status(404).json({ message: 'Event not found' });
 
-      // Organiser check
-      if (req.user.role === 'organiser' && currentEvent.department !== req.user.department) {
-          return res.status(403).json({ message: 'Access denied: Organisers can only manage their department' });
-      }
-
-      await Event.findByIdAndDelete(req.params.id);
-      res.json({ message: 'Event deleted successfully' });
-    } catch (err) {
-      res.status(500).json({ message: 'Server error deleting event' });
+    // Organiser check
+    if (req.user.role === 'organiser' && currentEvent.department !== req.user.department) {
+      return res.status(403).json({ message: 'Access denied: Organisers can only manage their department' });
     }
+
+    await Event.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Event deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error deleting event' });
+  }
 });
 
 // STUDENT & ANY AUTHENTICATED USER: Get visibly available events
 app.get('/api/events/available', authMiddleware, async (req, res) => {
-    try {
-      const events = await Event.find({ isVisibleToStudents: true, status: { $in: ['open', 'upcoming'] } }).sort({ date: 1 });
-      res.json(events);
-    } catch (err) {
-      res.status(500).json({ message: 'Server error fetching available events' });
-    }
+  try {
+    const events = await Event.find({ isVisibleToStudents: true, status: { $in: ['open', 'upcoming'] } }).sort({ date: 1 });
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error fetching available events' });
+  }
 });
 
 // =======================
@@ -383,7 +383,7 @@ app.get('/api/events/available', authMiddleware, async (req, res) => {
 app.post('/api/events/register', authMiddleware, async (req, res) => {
   try {
     const { name, email, phone, department, event, eventId, isVolunteer, volunteerRole } = req.body;
-    
+
     // Fetch user to get collegeId
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -400,37 +400,37 @@ app.post('/api/events/register', authMiddleware, async (req, res) => {
 
     // 🔍 Check Student conflicts (overlapping registrations)
     const existingRegistrations = await EventRegistration.find({ user_id: req.user.id });
-    
+
     for (const reg of existingRegistrations) {
-        // First check if already registered for the EXACT same event
-        if (reg.eventId && reg.eventId.toString() === targetEvent._id.toString()) {
-            return res.status(400).json({ message: `You have already registered for '${targetEvent.name}'.` });
-        }
+      // First check if already registered for the EXACT same event
+      if (reg.eventId && reg.eventId.toString() === targetEvent._id.toString()) {
+        return res.status(400).json({ message: `You have already registered for '${targetEvent.name}'.` });
+      }
 
-        let regEvent = await Event.findById(reg.eventId);
-        if (!regEvent) {
-          regEvent = await Event.findOne({ name: reg.event });
-        }
+      let regEvent = await Event.findById(reg.eventId);
+      if (!regEvent) {
+        regEvent = await Event.findOne({ name: reg.event });
+      }
 
-        if (regEvent && regEvent._id.toString() !== targetEvent._id.toString()) {
-            const regDateStr = new Date(regEvent.date).toISOString().split('T')[0];
-            const targetDateStr = new Date(targetEvent.date).toISOString().split('T')[0];
+      if (regEvent && regEvent._id.toString() !== targetEvent._id.toString()) {
+        const regDateStr = new Date(regEvent.date).toISOString().split('T')[0];
+        const targetDateStr = new Date(targetEvent.date).toISOString().split('T')[0];
 
-            if (regDateStr === targetDateStr) {
-                // Default legacy/missing times for safety
-                const cStart = regEvent.startTime || "00:00";
-                const cEnd = regEvent.endTime || "23:59";
-                const tStart = targetEvent.startTime || "00:00";
-                const tEnd = targetEvent.endTime || "23:59";
-                
-                // Overlap: (NewStart < ExistEnd) && (NewEnd > ExistStart)
-                if ((tStart < cEnd) && (tEnd > cStart)) {
-                    return res.status(400).json({ 
-                        message: `Time Slot Conflict: You are already registered for '${regEvent.name}' which is scheduled from ${cStart} to ${cEnd} on this day.` 
-                    });
-                }
-            }
+        if (regDateStr === targetDateStr) {
+          // Default legacy/missing times for safety
+          const cStart = regEvent.startTime || "00:00";
+          const cEnd = regEvent.endTime || "23:59";
+          const tStart = targetEvent.startTime || "00:00";
+          const tEnd = targetEvent.endTime || "23:59";
+
+          // Overlap: (NewStart < ExistEnd) && (NewEnd > ExistStart)
+          if ((tStart < cEnd) && (tEnd > cStart)) {
+            return res.status(400).json({
+              message: `Time Slot Conflict: You are already registered for '${regEvent.name}' which is scheduled from ${cStart} to ${cEnd} on this day.`
+            });
+          }
         }
+      }
     }
 
     const newRegistration = new EventRegistration({
@@ -477,8 +477,8 @@ app.get('/api/events/registrations', authMiddleware, staffMiddleware, async (req
   try {
     let query = {};
     if (req.user.role === 'organiser') {
-        const myEvents = await Event.find({ $or: [{ department: req.user.department }, { department: 'All' }] }).distinct('_id');
-        query = { eventId: { $in: myEvents } };
+      const myEvents = await Event.find({ $or: [{ department: req.user.department }, { department: 'All' }] }).distinct('_id');
+      query = { eventId: { $in: myEvents } };
     }
     const registrations = await EventRegistration.find(query).sort({ registrationDate: -1 });
     res.status(200).json(registrations);
@@ -490,13 +490,13 @@ app.get('/api/events/registrations', authMiddleware, staffMiddleware, async (req
 
 // STUDENT: Get currently logged in user's registrations
 app.get('/api/user/registrations', authMiddleware, async (req, res) => {
-    try {
-      const registrations = await EventRegistration.find({ user_id: req.user.id }).sort({ registrationDate: -1 });
-      res.status(200).json(registrations);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error fetching user registrations' });
-    }
+  try {
+    const registrations = await EventRegistration.find({ user_id: req.user.id }).sort({ registrationDate: -1 });
+    res.status(200).json(registrations);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error fetching user registrations' });
+  }
 });
 
 // ADMIN: Get all users (remove in production)
@@ -511,16 +511,16 @@ app.get('/api/debug/users', async (req, res) => {
 
 // STAFF: Get CRs from their specific department
 app.get('/api/department/crs', authMiddleware, staffMiddleware, async (req, res) => {
-    try {
-        let query = { role: 'student', isCR: true };
-        if (req.user.role === 'organiser') {
-            query.department = req.user.department;
-        }
-        const crs = await User.find(query).select('name email department collegeId');
-        res.json(crs);
-    } catch (err) {
-        res.status(500).json({ message: 'Error fetching CRs' });
+  try {
+    let query = { role: 'student', isCR: true };
+    if (req.user.role === 'organiser') {
+      query.department = req.user.department;
     }
+    const crs = await User.find(query).select('name email department collegeId');
+    res.json(crs);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching CRs' });
+  }
 });
 
 app.use((req, res) => {
@@ -532,25 +532,25 @@ app.use((req, res) => {
 // =======================
 // Run daily at 10 AM (00 10 * * *) or every hour for testing (* * * * *)
 cron.schedule('0 10 * * *', async () => {
-    console.log('--- 🛡️ RUNNING DAILY EVENT REMINDERS CRON ---');
-    try {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const startOfTomorrow = new Date(tomorrow.setUTCHours(0, 0, 0, 0));
-        const endOfTomorrow = new Date(tomorrow.setUTCHours(23, 59, 59, 999));
+  console.log('--- 🛡️ RUNNING DAILY EVENT REMINDERS CRON ---');
+  try {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const startOfTomorrow = new Date(tomorrow.setUTCHours(0, 0, 0, 0));
+    const endOfTomorrow = new Date(tomorrow.setUTCHours(23, 59, 59, 999));
 
-        // Find events happening tomorrow
-        const tomorrowEvents = await Event.find({ 
-            date: { $gte: startOfTomorrow, $lte: endOfTomorrow } 
-        });
+    // Find events happening tomorrow
+    const tomorrowEvents = await Event.find({
+      date: { $gte: startOfTomorrow, $lte: endOfTomorrow }
+    });
 
-        for (const ev of tomorrowEvents) {
-            const registrations = await EventRegistration.find({ eventId: ev._id });
-            console.log(`Sending reminders for ${ev.name} to ${registrations.length} students...`);
+    for (const ev of tomorrowEvents) {
+      const registrations = await EventRegistration.find({ eventId: ev._id });
+      console.log(`Sending reminders for ${ev.name} to ${registrations.length} students...`);
 
-            for (const r of registrations) {
-                const subject = `Reminder: '${ev.name}' is Tomorrow!`;
-                const html = `
+      for (const r of registrations) {
+        const subject = `Reminder: '${ev.name}' is Tomorrow!`;
+        const html = `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #eee;">
                         <h2 style="color: #f06292;">Event Reminder ⏰</h2>
                         <p>Hi ${r.name},</p>
@@ -562,12 +562,12 @@ cron.schedule('0 10 * * *', async () => {
                         <p>Don't forget to be there!</p>
                     </div>
                 `;
-                sendEmail(r.email, subject, `Reminder: ${ev.name} is tomorrow!`, html);
-            }
-        }
-    } catch (err) {
-        console.error('Cron reminder failed:', err);
+        sendEmail(r.email, subject, `Reminder: ${ev.name} is tomorrow!`, html);
+      }
     }
+  } catch (err) {
+    console.error('Cron reminder failed:', err);
+  }
 });
 
 // Start Server

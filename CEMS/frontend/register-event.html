@@ -98,6 +98,12 @@
 </div>
 
 <div class="events-container">
+    <div style="margin-bottom: 30px; display: flex; gap: 10px; justify-content: center;">
+        <div style="position: relative; width: 100%; max-width: 500px;">
+            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #9aa3b2;"></i>
+            <input type="text" id="searchEvents" placeholder="Search events by name or department..." style="width: 100%; padding: 12px 12px 12px 45px; border: 1px solid #eef0f5; border-radius: 30px; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.02); outline: none; transition: 0.3s; font-family: inherit;">
+        </div>
+    </div>
     <div class="events-grid" id="eventsGrid">
         <!-- Event Cards Injected Here -->
     </div>
@@ -167,46 +173,24 @@ if (!token) {
     window.location.href = "login.html";
 }
 
+let allEvents = [];
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         const response = await fetch('/api/events/available', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        const events = await response.json();
-        const grid = document.getElementById("eventsGrid");
-        grid.innerHTML = "";
+        allEvents = await response.json();
+        renderEvents(allEvents);
 
-        if(events.length === 0) {
-            grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1; color:#9aa3b2; font-size: 1.1rem; margin-top: 40px;'>No events currently open for registration check back soon!</p>";
-            return;
-        }
-
-        let role = 'student';
-        if (token) {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            role = payload.role;
-        }
-
-        events.forEach(ev => {
-            const dateStr = new Date(ev.date).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' });
-            const timeStr = (ev.startTime && ev.endTime) ? `${ev.startTime} - ${ev.endTime}` : 'TBA';
-            
-            const card = document.createElement("div");
-            card.className = "event-card";
-            card.innerHTML = `
-                <div class="event-card-header">
-                    <div class="event-badge">${ev.department}</div>
-                    <h3 class="event-title">${ev.name}</h3>
-                </div>
-                <div class="event-details">
-                    <div class="detail-item"><i class="fas fa-calendar-check"></i> <span>${dateStr}</span></div>
-                    <div class="detail-item"><i class="fas fa-clock"></i> <span>${timeStr}</span></div>
-                    <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.place || ev.venue || 'TBA'}</span></div>
-                    <div class="detail-item"><i class="fas fa-users"></i> <span>Seats: ${ev.maxSeats || 'Unlimited'}</span></div>
-                </div>
-                ${role === 'student' ? `<button class="btn-register-card" onclick="openModal('${ev.name.replace(/'/g, "\\'")}', '${ev._id}')">Register Now</button>` : ''}
-            `;
-            grid.appendChild(card);
+        // Live Search Handler
+        document.getElementById('searchEvents').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allEvents.filter(ev => 
+                ev.name.toLowerCase().includes(term) || 
+                ev.department.toLowerCase().includes(term) ||
+                (ev.place && ev.place.toLowerCase().includes(term))
+            );
+            renderEvents(filtered);
         });
 
         // Add toggle for volunteer role visibility
@@ -222,6 +206,44 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Failed to load events", err);
     }
 });
+
+function renderEvents(events) {
+    const grid = document.getElementById("eventsGrid");
+    grid.innerHTML = "";
+
+    if(events.length === 0) {
+        grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1; color:#9aa3b2; font-size: 1.1rem; margin-top: 40px;'>No matching events found!</p>";
+        return;
+    }
+
+    let role = 'student';
+    if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        role = payload.role;
+    }
+
+    events.forEach(ev => {
+        const dateStr = new Date(ev.date).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' });
+        const timeStr = (ev.startTime && ev.endTime) ? `${ev.startTime} - ${ev.endTime}` : 'TBA';
+        
+        const card = document.createElement("div");
+        card.className = "event-card";
+        card.innerHTML = `
+            <div class="event-card-header">
+                <div class="event-badge">${ev.department}</div>
+                <h3 class="event-title">${ev.name}</h3>
+            </div>
+            <div class="event-details">
+                <div class="detail-item"><i class="fas fa-calendar-check"></i> <span>${dateStr}</span></div>
+                <div class="detail-item"><i class="fas fa-clock"></i> <span>${timeStr}</span></div>
+                <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.place || ev.venue || 'TBA'}</span></div>
+                <div class="detail-item"><i class="fas fa-users"></i> <span>Seats: ${ev.maxSeats || 'Unlimited'}</span></div>
+            </div>
+            ${role === 'student' ? `<button class="btn-register-card" onclick="openModal('${ev.name.replace(/'/g, "\\'")}', '${ev._id}')">Register Now</button>` : ''}
+        `;
+        grid.appendChild(card);
+    });
+}
 
 function openModal(eventName, eventId) {
     document.getElementById("modalEventTitle").innerText = `Register for ${eventName}`;
