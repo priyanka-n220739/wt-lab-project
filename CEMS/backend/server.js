@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const EventRegistration = require('./models/EventRegistration');
 const Event = require('./models/Event');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const cron = require('node-cron');
 
 
@@ -36,30 +36,28 @@ mongoose.connect(MONGO_URI, { family: 4 })
   });
 
 // =======================
-// EMAIL CONFIGURATION
+// EMAIL CONFIGURATION (Resend)
 // =======================
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (to, subject, text, html) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.log('Email configuration missing in .env. Skipping email send for:', to);
+  if (!process.env.RESEND_API_KEY) {
+    console.log('RESEND_API_KEY missing in .env. Skipping email send for:', to);
     return;
   }
   try {
-    await transporter.sendMail({
-      from: `"EduEvents Team" <${process.env.EMAIL_USER}>`,
-      to,
+    const { error } = await resend.emails.send({
+      from: 'EduEvents Team <onboarding@resend.dev>',
+      to: [to],
       subject,
       text,
       html
     });
-    console.log(`Email successfully sent to ${to}`);
+    if (error) {
+      console.error(`Failed to send email to ${to}:`, error.message);
+    } else {
+      console.log(`Email successfully sent to ${to}`);
+    }
   } catch (err) {
     console.error(`Failed to send email to ${to}:`, err.message);
   }

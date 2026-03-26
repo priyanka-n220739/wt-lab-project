@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: CEMS
+    runtime: node
+    rootDir: CEMS/backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: MONGO_URI
+        sync: false   # Set manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false   # Set manually in Render dashboard
+      - key: RESEND_API_KEY
+        sync: false   # Set manually in Render dashboard
