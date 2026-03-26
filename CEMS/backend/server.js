@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const EventRegistration = require('./models/EventRegistration');
 const Event = require('./models/Event');
-const { Resend } = require('resend');
+
 const cron = require('node-cron');
 
 
@@ -36,25 +36,33 @@ mongoose.connect(MONGO_URI, { family: 4 })
   });
 
 // =======================
-// EMAIL CONFIGURATION (Resend)
+// EMAIL CONFIGURATION (Brevo API)
 // =======================
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const sendEmail = async (to, subject, text, html) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.log('RESEND_API_KEY missing in .env. Skipping email send for:', to);
+  if (!process.env.BREVO_API_KEY) {
+    console.log('BREVO_API_KEY missing in .env. Skipping email send for:', to);
     return;
   }
   try {
-    const { error } = await resend.emails.send({
-      from: 'EduEvents Team <onboarding@resend.dev>',
-      to: [to],
-      subject,
-      text,
-      html
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY
+      },
+      body: JSON.stringify({
+        sender: { email: 'bethapriyanka76@gmail.com', name: 'EduEvents Team' },
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: html,
+        textContent: text
+      })
     });
-    if (error) {
-      console.error(`Failed to send email to ${to}:`, error.message);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`Failed to send email to ${to}:`, errorData);
     } else {
       console.log(`Email successfully sent to ${to}`);
     }
