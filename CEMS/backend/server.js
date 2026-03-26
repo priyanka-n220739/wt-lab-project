@@ -21,6 +21,7 @@ const qrService = require('./services/qrService');
 const fraudService = require('./services/fraudService');
 const { createExtendedRouter } = require('./routes/extendedRoutes');
 const advancedRoutes = require('./routes/advanced');
+const roleMiddleware = require('./middleware/roleMiddleware');
 
 const app = express();
 const server = http.createServer(app);
