@@ -401,10 +401,28 @@
       <div class="card">
         <div class="card-head"><h3>📈 Registrations per Month</h3></div>
         <div class="chart-box"><canvas id="lineChart"></canvas></div>
+        <table class="tbl" id="lineChartTable" style="margin-top: 20px;">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Registrations</th>
+            </tr>
+          </thead>
+          <tbody id="lineChartTbody"></tbody>
+        </table>
       </div>
       <div class="card">
         <div class="card-head"><h3>🏛️ Events by Department</h3></div>
         <div class="chart-box"><canvas id="doughnutChart"></canvas></div>
+        <table class="tbl" id="doughnutChartTable" style="margin-top: 20px;">
+          <thead>
+            <tr>
+              <th>Department</th>
+              <th>Events</th>
+            </tr>
+          </thead>
+          <tbody id="doughnutChartTbody"></tbody>
+        </table>
       </div>
     </div>
 
@@ -628,6 +646,13 @@
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
+    // Populate line chart table
+    const lineTbody = document.getElementById('lineChartTbody');
+    lineTbody.innerHTML = '';
+    last6Labels.forEach((month, i) => {
+      lineTbody.innerHTML += `<tr><td>${month}</td><td>${last6Data[i]}</td></tr>`;
+    });
+
     // Events by Department Chart
     const deptCounts = {};
     evs.forEach(e => {
@@ -649,6 +674,13 @@
         }]
       },
       options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+    });
+
+    // Populate doughnut chart table
+    const doughnutTbody = document.getElementById('doughnutChartTbody');
+    doughnutTbody.innerHTML = '';
+    dLabels.forEach((dept, i) => {
+      doughnutTbody.innerHTML += `<tr><td>${dept}</td><td>${dData[i]}</td></tr>`;
     });
   }
 
