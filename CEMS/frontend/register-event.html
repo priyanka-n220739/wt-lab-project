@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register Event</title>
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="css/home.css">
+<style>
+/* Navbar */
+.navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 40px; background:#f06292; color:white; font-family: sans-serif; }
+.logo { font-size:22px; font-weight:bold; }
+.nav-links { list-style:none; display:flex; gap:25px; margin: 0; padding: 0; }
+.nav-links a { color:white; text-decoration:none; font-size:16px; }
+.nav-links a:hover { text-decoration:underline; }
+
+/* Heading */
+.heading { text-align:center; margin-top:40px; margin-bottom:10px; font-family: sans-serif; }
+.heading h1 { font-size:40px; font-weight:bold; background: linear-gradient(90deg,#f06292,#f48fb1); -webkit-background-clip:text; background-clip: text; color:transparent; margin: 0; }
+.heading p { color: #666; font-size: 16px; margin-top: 10px; }
+
+/* Events Grid */
+.events-container { max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: sans-serif; }
+.events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+
+/* Classic Professional Event Card */
+.event-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #eef0f5;
+    display: flex;
+    flex-direction: column;
+}
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+}
+.event-card-header { padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+.event-title { font-size: 1.3rem; font-weight: bold; color: #2d3a4a; margin-top: 10px; margin-bottom: 0;}
+.event-badge { display: inline-block; padding: 5px 12px; background: #fce4ec; color: #f06292; font-size: 0.75rem; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.event-details { margin-bottom: 20px; flex-grow: 1; }
+.detail-item { display: flex; align-items: center; margin-bottom: 12px; color: #6b7a90; font-size: 0.9rem; }
+.detail-item i { width: 25px; color: #f06292; font-size: 1.1rem; }
+.btn-register-card { width: 100%; padding: 12px; background: #f06292; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit;}
+.btn-register-card:hover { background: #d81b60; }
+
+/* Modal Styles */
+.modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+    align-items: center; justify-content: center; font-family: sans-serif; backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal-content {
+    background: white; padding: 30px; border-radius: 12px; width: 420px; max-width: 90vw;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2); animation: fadeInUp 0.3s ease;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.modal-title { font-size: 1.3rem; font-weight: bold; color: #2d3a4a; }
+.close-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #9aa3b2; transition: 0.2s;}
+.close-btn:hover { color: #dc2626; }
+
+/* Form inside modal */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 0.85rem;}
+.form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; outline:none; transition: border 0.2s;}
+.form-group input:focus, .form-group select:focus { border-color: #f06292; }
+.btn-submit { width: 100%; background: #f06292; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: background 0.2s; font-family: inherit;}
+.btn-submit:hover { background: #d81b60; }
+
+.success { display:none; text-align:center; background:#fce4ec; color:#ad1457; padding:15px; border-radius:6px; margin-top:20px; font-weight:600; font-size: 0.95rem; border: 1px solid #f06292; }
+</style>
+</head>
+<body style="background:#f4f7fb; margin:0;">
+
+<nav class="navbar">
+    <div class="logo">
+        <i class="fas fa-user-graduate"></i> CAMPUS EVENTS
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="student_dashboard.html" id="dashLink"><i class="fas fa-th-large"></i> Dashboard</a></li>
+        <li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+        <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</nav>
+
+<div class="heading">
+<h1>Discover Events</h1>
+<p>Browse perfectly curated events waiting for your active participation</p>
+</div>
+
+<div class="events-container">
+    <div style="margin-bottom: 30px; display: flex; gap: 10px; justify-content: center;">
+        <div style="position: relative; width: 100%; max-width: 500px;">
+            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #9aa3b2;"></i>
+            <input type="text" id="searchEvents" placeholder="Search events by name or department..." style="width: 100%; padding: 12px 12px 12px 45px; border: 1px solid #eef0f5; border-radius: 30px; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.02); outline: none; transition: 0.3s; font-family: inherit;">
+        </div>
+    </div>
+    <div class="events-grid" id="eventsGrid">
+        <!-- Event Cards Injected Here -->
+    </div>
+</div>
+
+<!-- Registration Modal -->
+<div class="modal-overlay" id="registrationModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="modalEventTitle">Register for Event</div>
+            <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <form id="eventForm">
+            <input type="hidden" id="eventTargetName">
+            <input type="hidden" id="eventTargetId">
+            
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="name" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+                <label>College Email</label>
+                <input type="email" id="email" placeholder="john@example.edu" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="phone" placeholder="+1 234 567 8900" required>
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select id="department" required>
+                    <option value="" disabled selected>Select Department</option>
+                    <option>CSE</option><option>ECE</option><option>Mechanical</option><option>Civil</option><option>IT</option><option>MBA</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin: 15px 0;">
+                <input type="checkbox" id="isVolunteer" style="width: auto;">
+                <label for="isVolunteer" style="margin-bottom: 0;">Register as a Volunteer?</label>
+            </div>
+
+            <div id="volunteerRoleGroup" style="display: none; margin-bottom: 15px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 0.85rem;">Select Area for Volunteering</label>
+                <select id="volunteerRole" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 0.95rem; outline:none;">
+                    <option value="" disabled selected>Choose role...</option>
+                    <option value="hospitality">Hospitality</option>
+                    <option value="craft">Craft & Decoration</option>
+                    <option value="disciplinary">Disciplinary</option>
+                    <option value="technical">Technical Support</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <button class="btn-submit" type="submit"><i class="fas fa-check-circle"></i> Complete Registration</button>
+        </form>
+        
+        <div class="success" id="successMsg">✅ Registration Successful! Returning you back...</div>
+        <div id="errorMsg" style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-top: 15px; display: none; border: 1px solid #fecaca;"></div>
+    </div>
+</div>
+
+<script>
+const token = localStorage.getItem("cems_token");
+if (!token) {
+    alert("Please log in to register for events.");
+    window.location.href = "login.html";
+}
+
+let allEvents = [];
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const response = await fetch('/api/events/available', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        allEvents = await response.json();
+        renderEvents(allEvents);
+
+        // Live Search Handler
+        document.getElementById('searchEvents').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allEvents.filter(ev => 
+                ev.name.toLowerCase().includes(term) || 
+                ev.department.toLowerCase().includes(term) ||
+                (ev.place && ev.place.toLowerCase().includes(term))
+            );
+            renderEvents(filtered);
+        });
+
+        // Add toggle for volunteer role visibility
+        const isVolunteerCheckbox = document.getElementById("isVolunteer");
+        const volunteerRoleGroup = document.getElementById("volunteerRoleGroup");
+        if (isVolunteerCheckbox && volunteerRoleGroup) {
+            isVolunteerCheckbox.addEventListener("change", function() {
+                volunteerRoleGroup.style.display = this.checked ? "block" : "none";
+            });
+        }
+
+    } catch (err) {
+        console.error("Failed to load events", err);
+    }
+});
+
+function renderEvents(events) {
+    const grid = document.getElementById("eventsGrid");
+    grid.innerHTML = "";
+
+    if(events.length === 0) {
+        grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1; color:#9aa3b2; font-size: 1.1rem; margin-top: 40px;'>No matching events found!</p>";
+        return;
+    }
+
+    let role = 'student';
+    if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        role = payload.role;
+    }
+
+    events.forEach(ev => {
+        const dateStr = new Date(ev.date).toLocaleDateString('en-US', { day:'numeric', month:'long', year:'numeric' });
+        const timeStr = (ev.startTime && ev.endTime) ? `${ev.startTime} - ${ev.endTime}` : 'TBA';
+        
+        const card = document.createElement("div");
+        card.className = "event-card";
+        card.innerHTML = `
+            <div class="event-card-header">
+                <div class="event-badge">${ev.department}</div>
+                <h3 class="event-title">${ev.name}</h3>
+            </div>
+            <div class="event-details">
+                <div class="detail-item"><i class="fas fa-calendar-check"></i> <span>${dateStr}</span></div>
+                <div class="detail-item"><i class="fas fa-clock"></i> <span>${timeStr}</span></div>
+                <div class="detail-item"><i class="fas fa-map-marker-alt"></i> <span>${ev.place || ev.venue || 'TBA'}</span></div>
+                <div class="detail-item"><i class="fas fa-users"></i> <span>Seats: ${ev.maxSeats || 'Unlimited'}</span></div>
+            </div>
+            ${role === 'student' ? `<button class="btn-register-card" onclick="openModal('${ev.name.replace(/'/g, "\\'")}', '${ev._id}')">Register Now</button>` : ''}
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function openModal(eventName, eventId) {
+    document.getElementById("modalEventTitle").innerText = `Register for ${eventName}`;
+    document.getElementById("eventTargetName").value = eventName;
+    document.getElementById("eventTargetId").value = eventId;
+    
+    // Reset from potential previous attempts
+    document.getElementById("successMsg").style.display = "none";
+    document.getElementById("errorMsg").style.display = "none";
+    document.getElementById("eventForm").style.display = "block";
+    
+    document.getElementById("registrationModal").classList.add("open");
+}
+
+function closeModal() {
+    document.getElementById("registrationModal").classList.remove("open");
+}
+
+// Close over window if clicking outside modal content
+window.onclick = function(event) {
+    const modal = document.getElementById("registrationModal");
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+document.getElementById("eventForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+    
+    document.getElementById("errorMsg").style.display = "none";
+    
+    let name = document.getElementById("name").value;
+    let email = document.getElementById("email").value;
+    let phone = document.getElementById("phone").value;
+    let department = document.getElementById("department").value;
+    let event = document.getElementById("eventTargetName").value;
+    let eventId = document.getElementById("eventTargetId").value;
+    let isVolunteer = document.getElementById("isVolunteer").checked;
+    let volunteerRole = isVolunteer ? document.getElementById("volunteerRole").value : null;
+
+    if (isVolunteer && !volunteerRole) {
+        alert("Please select a volunteer role!");
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/events/register', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, email, phone, department, event, eventId, isVolunteer, volunteerRole })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById("eventForm").style.display = "none";
+            document.getElementById("successMsg").style.display = "block";
+            document.getElementById("eventForm").reset();
+            
+            // Auto close modal
+            setTimeout(() => {
+                closeModal();
+            }, 2500);
+        } else {
+            const errorMsg = document.getElementById("errorMsg");
+            errorMsg.style.display = "block";
+            errorMsg.innerText = data.message || "Registration failed";
+        }
+    } catch (err) {
+        const errorMsg = document.getElementById("errorMsg");
+        errorMsg.style.display = "block";
+        errorMsg.innerText = "Server error. Please try again later.";
+    }
+});
+</script>
+
+
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-links">
+            <a href="home.html">Home</a>
+            <a href="college-events.html">Events</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <span>📧 support@eduevents.edu</span>
+            <span>📞 +91 (800) 123-4567</span>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 EduEvents Management System. All Rights Reserved.
+        </div>
+    </div>
+</footer>
+
+<script>
+function logout() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem('cems_token');
+        window.location.href = "landing.html";
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('cems_token');
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const dashLink = document.getElementById('dashLink');
+            if (payload.role === 'admin') {
+                dashLink.href = "admin_dashboard.html";
+            } else {
+                dashLink.href = "student_dashboard.html";
+            }
+        } catch(e) { console.error(e); }
+    }
+});
+</script>
+
+</body>
+</html>

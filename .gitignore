@@ -1,0 +1,34 @@
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.*
+!.env.example
+
+# ========================
+# Node.js
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# ========================
+# OS Files
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# VS Code
+# ========================
+.vscode/
+*.code-workspace
+
+# ========================
+# Logs
+# ========================
+logs/
+*.log

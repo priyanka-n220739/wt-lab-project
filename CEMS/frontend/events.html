@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Department Events</title>
+
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+
+/* Page title */
+.heading{
+text-align:center;
+margin-top:40px;
+margin-bottom:20px;
+}
+
+.heading h1{
+font-size:40px;
+font-weight:bold;
+background: linear-gradient(90deg,#f06292,#f48fb1);
+-webkit-background-clip:text;
+background-clip: text;
+color:transparent;
+}
+
+.departments{
+display:flex;
+justify-content:center;
+gap:30px;
+flex-wrap:wrap;
+padding:40px;
+}
+
+.department-card{
+width:280px;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+text-align:center;
+transition:0.3s;
+}
+
+.department-card:hover{
+transform:scale(1.05);
+}
+
+.department-card img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:8px;
+}
+
+select{
+width:100%;
+padding:8px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+.btn { background:#f06292; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
+.btn:hover { background:#d81b60; }
+
+.delete-btn{
+background:#dc3545;
+}
+
+.delete-btn:hover{
+background:#a71d2a;
+}
+
+.register-btn{
+background:#f06292;
+}
+
+.register-btn:hover{
+background:#d81b60;
+}
+
+.event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; text-align: left; }
+.event-card { background: #fdfdfd; border: 1px solid #eee; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
+.event-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.event-details { padding: 15px; }
+.event-details h3 { font-size: 1.2rem; color: #f06292; margin-bottom: 8px; }
+.event-info { font-size: 0.85rem; color: #555; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+.event-info i { color: #f06292; width: 16px; }
+.event-card .badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+.department-card img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:8px;
+}
+
+select{
+width:100%;
+padding:8px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+</style>
+
+<script>
+async function loadEvents() {
+    const token = localStorage.getItem('cems_token');
+    if (!token) return;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.role;
+
+        // Update Dashboard Link
+        const dashLink = document.getElementById('dashLink');
+        if (role === 'admin' || role === 'organiser') {
+            dashLink.href = "admin_dashboard.html";
+        } else {
+            dashLink.href = "student_dashboard.html";
+        }
+
+        // Role-based button and card visibility
+        document.querySelectorAll('.department-card').forEach(card => {
+            const cardDept = card.querySelector('h2').innerText.split(' ')[0]; // E.g., 'CSE'
+            const buttons = card.querySelectorAll('button');
+            
+            buttons.forEach(btn => {
+                const text = btn.innerText.toLowerCase();
+                
+                if (role === 'student') {
+                    // Students see Register but not Add/Delete
+                    if (text.includes('add') || text.includes('delete')) {
+                        btn.style.display = 'none';
+                    }
+                } else if (role === 'organiser') {
+                    const myDept = payload.department;
+                    // Organisers don't need to register
+                    if (text.includes('register')) {
+                        btn.style.display = 'none';
+                        if (btn.parentElement.tagName === 'A') {
+                            btn.parentElement.style.display = 'none';
+                        }
+                    }
+                    // Organisers only see Add/Delete for their own department
+                    if ((text.includes('add') || text.includes('delete')) && cardDept !== myDept) {
+                        btn.style.display = 'none';
+                    }
+                } else if (role === 'admin') {
+                    // Admins see Add/Delete but not Register
+                    if (text.includes('register')) {
+                        btn.style.display = 'none';
+                        if (btn.parentElement.tagName === 'A') {
+                            btn.parentElement.style.display = 'none';
+                        }
+                    }
+                }
+            });
+
+            // Organisers only see their own department card
+            if (role === 'organiser') {
+                const myDept = payload.department;
+                if (cardDept !== myDept) {
+                    card.style.display = 'none';
+                }
+            }
+        });
+
+        const resp = await fetch('/api/events/available', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const events = await resp.json();
+
+        const categories = {
+            'CSE': 'cseEvents',
+            'ECE': 'eceEvents',
+            'Mechanical': 'mechEvents'
+        };
+
+        // Clear and Reset Selects
+        Object.values(categories).forEach(id => {
+            const select = document.getElementById(id);
+            if (select) select.innerHTML = '<option>Choose Event</option>';
+        });
+
+        events.forEach(ev => {
+            const selectId = categories[ev.department];
+            if (selectId) {
+                const select = document.getElementById(selectId);
+                const option = document.createElement("option");
+                option.text = ev.name;
+                option.value = ev._id;
+                select.add(option);
+            }
+        });
+    } catch (e) {
+        console.error("Error loading events", e);
+    }
+}
+
+async function addEvent(selectId){
+    const deptMap = {
+        'cseEvents': 'CSE',
+        'eceEvents': 'ECE',
+        'mechEvents': 'Mechanical'
+    };
+    const department = deptMap[selectId];
+    
+    // Fill the modal with the pre-selected department
+    document.getElementById('eDept').value = department;
+    openModal();
+}
+
+async function deleteEvent(selectId){
+    const token = localStorage.getItem('cems_token');
+    let select = document.getElementById(selectId);
+    if(select.selectedIndex > 0){
+        const eventId = select.value;
+        if (confirm("Delete this event?")) {
+            try {
+                const response = await fetch(`/api/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    alert("Event Deleted Successfully");
+                    loadEvents();
+                } else {
+                    alert("Failed to delete event");
+                }
+            } catch (err) { console.error(err); }
+        }
+    } else {
+        alert("Select an event to delete");
+    }
+}
+
+function openModal() { document.getElementById('overlay').classList.add('open'); }
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function outsideClose(e) { if (e.target.id === 'overlay') closeModal(); }
+
+async function submitEvent() {
+    const errorDiv = document.getElementById('modalError');
+    errorDiv.style.display = 'none';
+
+    const token = localStorage.getItem('cems_token');
+    const name = document.getElementById('eName').value.trim();
+    const date = document.getElementById('eDate').value;
+    const department = document.getElementById('eDept').value;
+    const startTime = document.getElementById('eStartTime').value;
+    const endTime = document.getElementById('eEndTime').value;
+    const place = document.getElementById('ePlace').value.trim();
+    const maxSeats = document.getElementById('eSeats').value;
+
+    if (!name || !date || !startTime || !endTime || !place) { 
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = 'Please fill all required fields.';
+        return; 
+    }
+
+    if (startTime >= endTime) {
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = 'End time must be after start time.';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/events', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ 
+                name, date, department, startTime, endTime, place, maxSeats, image,
+                status: 'open', isVisibleToStudents: true 
+            })
+        });
+        if (response.ok) {
+            alert("Event Added Successfully");
+            loadEvents();
+            closeModal();
+            // Reset form
+            document.getElementById('eName').value = '';
+            document.getElementById('eDate').value = '';
+            document.getElementById('eStartTime').value = '';
+            document.getElementById('eEndTime').value = '';
+            document.getElementById('ePlace').value = '';
+            document.getElementById('eSeats').value = '';
+            document.getElementById('eImage').value = '';
+        } else {
+            const data = await response.json();
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = data.message || 'Failed to add event';
+        }
+    } catch (err) {
+        console.error('Error adding event:', err);
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = 'Connection error. Try again.';
+    }
+}
+
+function logout() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem('cems_token');
+        window.location.href = "landing.html";
+    }
+}
+
+async function deleteEvent(selectId){
+    const token = localStorage.getItem('cems_token');
+    let select = document.getElementById(selectId);
+    if(select.selectedIndex > 0){
+        const eventId = select.value;
+        if (confirm("Delete this event?")) {
+            try {
+                const response = await fetch(`/api/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    alert("Event Deleted Successfully");
+                    loadEvents();
+                } else {
+                    alert("Failed to delete event");
+                }
+            } catch (err) { console.error(err); }
+        }
+    } else {
+        alert("Select an event to delete");
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadEvents);
+</script>
+
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">
+        <i class="fas fa-user-graduate"></i> CAMPUS EVENTS
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="student_dashboard.html" id="dashLink"><i class="fas fa-th-large"></i> Dashboard</a></li>
+        <li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+        <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</nav>
+
+<div class="heading">
+<h1>Department Events</h1>
+</div>
+
+<div class="departments">
+
+<!-- CSE -->
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600">
+
+<h2>CSE Department</h2>
+<p>Select an event conducted by the CSE department.</p>
+
+<select id="cseEvents">
+<option>Choose Event</option>
+</select>
+
+<button class="btn" onclick="addEvent('cseEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('cseEvents')">Delete Event</button>
+<a href="register-event.html"><button class="btn register-btn">Register</button></a>
+
+</div>
+
+<!-- ECE -->
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600">
+
+<h2>ECE Department</h2>
+<p>Select an event conducted by the ECE department.</p>
+
+<select id="eceEvents">
+<option>Choose Event</option>
+</select>
+
+<button class="btn" onclick="addEvent('eceEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('eceEvents')">Delete Event</button>
+<a href="register-event.html"><button class="btn register-btn">Register</button></a>
+
+</div>
+
+<!-- Mechanical -->
+<div class="department-card">
+
+<img src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=600&q=80">
+
+<h2>Mechanical Department</h2>
+<p>Select an event conducted by the Mechanical department.</p>
+
+<select id="mechEvents">
+<option>Choose Event</option>
+</select>
+
+<button class="btn" onclick="addEvent('mechEvents')">Add Event</button>
+<button class="btn delete-btn" onclick="deleteEvent('mechEvents')">Delete Event</button>
+<a href="register-event.html"><button class="btn register-btn">Register</button></a>
+
+</div>
+
+</div>
+
+<!-- ADD EVENT MODAL -->
+<div class="overlay" id="overlay" onclick="outsideClose(event)">
+  <div class="modal">
+    <h2>➕ Add New Event</h2>
+    
+    <div id="modalError" style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; display: none; border: 1px solid #fecaca;"></div>
+
+    <div class="fg">
+      <label>Event Name</label>
+      <input id="eName" type="text" placeholder="e.g. Workshop 2026"/>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input id="eDate" type="date"/></div>
+      <div class="fg">
+        <label>Department</label>
+        <select id="eDept">
+          <option>CSE</option>
+          <option>ECE</option>
+          <option>Mechanical</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="frow">
+      <div class="fg"><label>Start Time</label><input id="eStartTime" type="time"/></div>
+      <div class="fg"><label>End Time</label><input id="eEndTime" type="time"/></div>
+    </div>
+
+    <div class="frow">
+      <div class="fg"><label>Place / Venue</label><input id="ePlace" type="text" placeholder="e.g. Lab 1"/></div>
+      <div class="fg"><label>Max Seats</label><input id="eSeats" type="number" placeholder="50"/></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitEvent()">Create Event</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-links">
+            <a href="home.html">Home</a>
+            <a href="college-events.html">Events</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="footer-contact">
+            <span>📧 support@eduevents.edu</span>
+            <span>📞 +91 (800) 123-4567</span>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 EduEvents Management System. All Rights Reserved.
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
