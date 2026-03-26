@@ -23,7 +23,11 @@ async function registersuccess() {
 
         if (response.ok) {
             alert("Registration successful");
-            window.location.href = "login.html";
+            if (role === 'organizer') {
+                window.location.href = "organizer_login.html";
+            } else {
+                window.location.href = "login.html";
+            }
         } else {
             alert("Registration failed: " + data.message);
         }
@@ -206,6 +210,7 @@ font-size:15px;
     <option value="" disabled selected>Select Role</option>
     <option value="student">Student</option>
     <option value="admin">Admin</option>
+    <option value="organizer">Organizer</option>
 </select>
 <label>Register As</label>
 </div>

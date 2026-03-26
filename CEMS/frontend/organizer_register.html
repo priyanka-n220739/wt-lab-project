@@ -23,6 +23,7 @@ async function registersuccess() {
 
         if (response.ok) {
             alert("Organizer Registration successful. Please login.");
+            localStorage.removeItem('cems_token');
             window.location.href = "organizer_login.html";
         } else {
             alert("Registration failed: " + data.message);

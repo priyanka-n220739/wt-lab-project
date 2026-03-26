@@ -21,7 +21,13 @@ async function loginsuccess() {
         if (response.ok) {
             alert("Organizer Login successful");
             localStorage.setItem('cems_token', data.token);
-            window.location.href = "organizer_dashboard.html";
+            const role = data.role || 'organizer';
+            if (role === 'organizer' || role === 'admin') {
+                window.location.href = "organizer_dashboard.html";
+            } else {
+                alert('Access denied: account is not organizer');
+                localStorage.removeItem('cems_token');
+            }
         } else {
             alert("Login failed: " + data.message);
         }
