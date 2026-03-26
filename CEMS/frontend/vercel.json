@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://cems-backend-xyd9.onrender.com/api/:path*"
+    },
+    {
+      "source": "/",
+      "destination": "/landing.html"
     }
   ]
 }
