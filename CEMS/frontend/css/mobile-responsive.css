@@ -1,0 +1,85 @@
+/* mobile-responsive.css */
+@media (max-width: 768px) {
+    /* Navbar */
+    .navbar, header {
+      flex-direction: column !important;
+      padding: 15px 10px !important;
+      text-align: center;
+      gap: 15px;
+    }
+    .nav-links, ul {
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0;
+      display: flex;
+      gap: 10px;
+    }
+    .nav-links li {
+      margin: 5px !important;
+    }
+    
+    /* Layouts */
+    .container, .content, .dashboard-container, .main-content, .wrapper {
+      padding: 15px 10px !important;
+      width: 100% !important;
+      margin: 0 !important;
+      box-sizing: border-box;
+    }
+    .dashboard-layout {
+      flex-direction: column !important;
+    }
+    .sidebar {
+      width: 100% !important;
+      height: auto !important;
+      position: relative !important;
+      min-height: auto !important;
+    }
+    
+    /* Flex and Grid Rows */
+    .card-row, .row, .grid, .stats-row, .event-list, .events-grid, .form-row {
+      flex-direction: column !important;
+      align-items: center !important;
+      display: flex !important;
+    }
+    
+    /* Cards */
+    .card, .event-card, .stat-card, .login-box, .register-box {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 0 20px 0 !important;
+      box-sizing: border-box;
+    }
+  
+    /* Modals */
+    .modal, .overlay-content {
+      width: 95% !important;
+      padding: 20px !important;
+    }
+    .frow {
+      grid-template-columns: 1fr !important;
+      gap: 10px !important;
+    }
+    
+    /* Typography */
+    h1 { font-size: 1.8rem !important; text-align: center; }
+    h2 { font-size: 1.4rem !important; text-align: center; }
+    h3 { font-size: 1.2rem !important; }
+    
+    /* Forms & Buttons */
+    .btn, button, input, select {
+      width: 100% !important;
+      margin-bottom: 10px;
+    }
+    .modal-btns {
+      flex-direction: column;
+    }
+    
+    /* Tables */
+    .table-container, table {
+      display: block !important;
+      overflow-x: auto !important;
+      white-space: nowrap !important;
+      width: 100% !important;
+    }
+  }
