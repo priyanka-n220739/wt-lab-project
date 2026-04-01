@@ -6,6 +6,7 @@
     <title>Campus Events</title>
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <script>
 function logout() {
@@ -51,7 +52,7 @@ async function fetchUpcomingEvents(role) {
         const upcoming = events.filter(e => e.status === 'open' || e.status === 'upcoming');
         
         if (upcoming.length > 0) {
-            ticker.innerHTML = upcoming.map(e => `<span>🚀 Upcoming: ${e.name} (${e.department}) on ${new Date(e.date).toLocaleDateString()} at ${e.place}</span>`).join('');
+            ticker.innerHTML = upcoming.map(e => `<span><i class="bi bi-rocket-takeoff"></i> Upcoming: ${e.name} (${e.department}) on ${new Date(e.date).toLocaleDateString()} at ${e.place}</span>`).join('');
         } else {
             ticker.innerHTML = '<span>No new upcoming events for your department.</span>';
         }
@@ -160,7 +161,7 @@ async function submitEvent() {
 <!-- ADD EVENT MODAL -->
 <div class="overlay" id="overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;" onclick="outsideClose(event)">
   <div style="background: white; padding: 30px; border-radius: 12px; width: 450px; max-width: 90vw;">
-    <h2 style="color: #f06292; margin-bottom: 20px;">➕ Add New Event</h2>
+    <h2 style="color: #f06292; margin-bottom: 20px;"><i class="bi bi-plus-circle"></i> Add New Event</h2>
     <div id="modalError" style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; display: none;"></div>
     <div style="margin-bottom: 15px;">
       <label style="display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">Event Name</label>
@@ -220,8 +221,8 @@ async function submitEvent() {
             <a href="about.html">About</a>
         </div>
         <div class="footer-contact">
-            <span>📧 support@eduevents.edu</span>
-            <span>📞 +91 (800) 123-4567</span>
+            <span><i class="bi bi-envelope"></i> support@eduevents.edu</span>
+            <span><i class="bi bi-telephone"></i> +91 (800) 123-4567</span>
         </div>
         <div class="footer-bottom">
             &copy; 2026 EduEvents Management System. All Rights Reserved.
